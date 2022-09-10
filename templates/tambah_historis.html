@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block content %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+<div class="container">
+  <h1>Tambah Historis di Sini !</h1>
+  <br>
+  <div class="container-fluid">
+    <form method="POST">
+      {{form.hidden_tag()}}
+
+      {{wtf.form_field(form.type)}}
+      {{wtf.form_field(form.pic)}}
+      {{wtf.form_field(form.judul)}}
+      {{wtf.form_field(form.nomor)}}
+      {{wtf.form_field(form.tanggal)}}
+      {{form.submit()}}
+
+    </form>
+
+  </div>
+</div>
+{% endblock %}

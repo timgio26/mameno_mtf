@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block content %}
+{% import 'bootstrap/wtf.html' as wtf %}
+<h1>Delete Complaint</h1>
+<h3>{{comp.no_agr}}</h3>
+<div class='container'>
+    <p> Hapus complaint dan follow up nya?</p>
+    <form method="POST">
+      {{form.hidden_tag()}}
+
+      {{form.submit(class="btn btn-danger btn-sm")}}
+
+    </form>
+</div>
+
+{% endblock %}
