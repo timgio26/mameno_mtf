@@ -1,3 +1,8 @@
 # ignore all excel
 *.xlsx
+config.py
+*.sqlite
+venv/
+migrations/
+
 
