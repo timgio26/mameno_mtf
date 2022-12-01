@@ -232,8 +232,7 @@ def dashclosed():
 
 @app.route('/dashboard',methods=['GET','POST'])
 def dashboard():
-
-    df=pd.read_sql_table('dbfucomp', SQLALCHEMY_DATABASE_URI)
+    df=pd.read_sql_table('dbfucomp', app.config['SQLALCHEMY_DATABASE_URI'])
     df["MY"]=df['fudate'].dt.strftime('%Y-%m')
     res=df[df['status']=='Closed'].groupby("MY")[["idcomp"]].nunique().reset_index()
     print(res)
@@ -244,13 +243,13 @@ def dashboard():
     fig.update_layout(width=500)
     graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
 
-    df=pd.read_sql_table('dbcomp', SQLALCHEMY_DATABASE_URI)
+    df=pd.read_sql_table('dbcomp', app.config['SQLALCHEMY_DATABASE_URI'])
     res=df.groupby("status")[["id"]].nunique().reset_index()
     fig = px.pie(res, values='id', names='status')
     fig.update_layout(width=400)
     graphJSON2 = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
 
-    df=pd.read_sql_table('dbcomp', SQLALCHEMY_DATABASE_URI)
+    df=pd.read_sql_table('dbcomp', app.config['SQLALCHEMY_DATABASE_URI'])
     res=df[df['status']=='On Progress'].groupby("area_cg")[["id"]].nunique().reset_index()
     fig = px.bar(res, y='area_cg', x='id', orientation='h',labels={'area_cg':'Area CG','id':'Jumlah No Kontrak'})
     fig.update_layout(width=500)
@@ -748,7 +747,7 @@ def daftar():
 
 @app.route('/download/<type>',methods=['GET', 'POST'])
 def download(type):
-    cnx = create_engine(SQLALCHEMY_DATABASE_URI)
+    cnx = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
     if type=='nota':
         df=pd.read_sql_table('tbl_nota', con=cnx)
     elif type=='telecol':
