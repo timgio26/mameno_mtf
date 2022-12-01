@@ -1,24 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
 {% import 'bootstrap/wtf.html' as wtf %}
-<head>
-<style>
-table {
-  font-family: arial, sans-serif;
-  border-collapse: collapse;
-}
-
-td, th {
-  border: 1px solid #dddddd;
-  text-align: left;
-  padding: 10px;
-}
-
-tr:nth-child(even) {
-  background-color: #dddddd;
-}
-</style>
-</head>
 
 <div class="container">
   <form method="POST">
@@ -29,6 +11,7 @@ tr:nth-child(even) {
 
   </form>
 </div>
+<br>
 
 <div class="container">
   {% if session['user']=='admin' %}
@@ -99,3 +82,10 @@ tr:nth-child(even) {
 </div>
 
 {% endblock %}
+
+{% block scripts %}
+<script>
+  $(document).ready(function(){$('table').DataTable();});
+  // $(document).ready(function(){$('#tabeljanjian2').DataTable();});
+</script>
+{% endblock %}  
