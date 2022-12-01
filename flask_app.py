@@ -16,13 +16,13 @@ import plotly.express as px
 
 
 app = Flask(__name__)
-app.config['DEBUG']=True
-
-SQLALCHEMY_DATABASE_URI="mysql+mysqlconnector://mameno:mysqlmtf2021@mameno.mysql.pythonanywhere-services.com/mameno$default"
-app.config['SECRET_KEY']='bumimarinaemas'
-app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
-app.config['SQLALCHEMY_POLL_RECYCLE']=299
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+# app.config['DEBUG']=True
+app.config.from_pyfile('config.py')
+# SQLALCHEMY_DATABASE_URI="mysql+mysqlconnector://mameno:mysqlmtf2021@mameno.mysql.pythonanywhere-services.com/mameno$default"
+# app.config['SECRET_KEY']='bumimarinaemas'
+# app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
+# app.config['SQLALCHEMY_POLL_RECYCLE']=299
+# app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 Migrate(app,db)
