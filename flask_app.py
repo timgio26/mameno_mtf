@@ -5,8 +5,8 @@ from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
 from flask_migrate import Migrate
 from wtforms import StringField,SubmitField,SelectField,PasswordField
-from wtforms.validators import DataRequired
-from wtforms.fields.html5 import DateField,IntegerField
+from wtforms.validators import DataRequired,Optional
+from wtforms.fields import DateField,IntegerField
 # import os
 from datetime import datetime,date,timedelta
 from flask_restful import Resource,Api
@@ -112,10 +112,10 @@ class formsppi(FlaskForm):
     jabatan=SelectField('Jabatan:',choices=['AMO','ARMO','AR Head','Remedial Head','SAM Head','Recovery Head'],validators=[DataRequired()])
     predikat=SelectField('Predikat:',choices=['Lulus','Tidak Lulus','Belum Ada Hasil','Belum Sertifikasi'],validators=[DataRequired()])
     status=SelectField('Status:',choices=['Active','Expired','Tidak Lulus','Belum Sertifikasi'],validators=[DataRequired()])
-    act_date=DateField('Tanggal Pelaksanaan:')
+    act_date=DateField('Tanggal Pelaksanaan:',validators=[Optional()])
     exp_date=DateField('Exp Date:',validators=[DataRequired()])
     # next_date=StringField('Jadwal Sertifikasi Berikutnya:')
-    next_date=DateField('Jadwal Sertifikasi Berikutnya:')
+    next_date=DateField('Jadwal Sertifikasi Berikutnya:',validators=[Optional()])
     submit=SubmitField('Enter')
 
 class editsppi(formsppi):
@@ -357,7 +357,7 @@ def sppi():
         form=formsppi()
         df=dbsppi.query.all()
         if form.validate_on_submit():
-            newdata=dbsppi(nip=form.nip.data,nama=form.nama.data,reg=form.reg.data,cabang=form.cabang.data,jabatan=form.jabatan.data,predikat=form.predikat.data,status=form.status.data,act_date=form.act_date.data,exp_date=form.exp_date.data,next_date_str=form.next_date.data)
+            newdata=dbsppi(nip=form.nip.data,nama=form.nama.data,reg=form.reg.data,cabang=form.cabang.data,jabatan=form.jabatan.data,predikat=form.predikat.data,status=form.status.data,act_date=form.act_date.data,exp_date=form.exp_date.data,next_date=form.next_date.data)
             db.session.add(newdata)
             db.session.commit()
             return redirect(url_for('sppi'))
@@ -741,7 +741,6 @@ def daftar():
         db.session.add(userbaru)
         db.session.commit()
         return redirect(url_for('masuk'))
-
     else:
         return render_template('signup.html',form=form)
 
