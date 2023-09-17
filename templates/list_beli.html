@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% block content %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+
+
+<div class="container">
+  {% if session['user']=='admin' %}
+  <table class="table">
+    <thead>
+      <tr>
+        <th style="width:15%">Nomor</th>
+        <th style="width:23%">Judul</th>
+        <th style="width:10%">Nama PIC</th>
+        <th style="width:10%">Tanggal Buat</th>
+        <th style="width:35%">URL</th>
+        <th style="width:7%">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for x in df %}
+      <tr>
+
+        <td>{{x.no_beli}}</td>
+        <td>{{x.judul_beli}}</td>
+        <td>{{x.penulis_beli}}</td>
+        <td>{{x.tanggal_buat}}</td>
+        <td>{{x.linkbeli}}</td>
+        <td>
+          <a class="btn btn-warning btn-sm" href="/updatefbeli/{{x.id}}" role="button">Update</a>
+          <a class="btn btn-danger btn-sm" href="/delbeli/{{x.id}}" role="button">Hapus</a>
+        </td>
+      </tr>
+      {% endfor %}
+
+    </tbody>
+  </table>
+    <!-- <a class="btn btn-primary btn-sm" href="/download/nota" role="button">Download All</a> -->
+  {% else %}
+
+  <table class="table">
+    <thead>
+      <tr>
+
+        <th style="width:15%">Nomor</th>
+        <th style="width:25%">Judul</th>
+        <th style="width:20%">Nama</th>
+        <th style="width:20%">Tanggal Buat</th>
+        <th style="width:20%">URL</th>
+
+      </tr>
+    </thead>
+    <tbody>
+      {% for x in df %}
+      <tr>
+
+        <td>{{x.no_beli}}</td>
+        <td>{{x.judul_beli}}</td>
+        <td>{{x.penulis_beli}}</td>
+        <td>{{x.tanggal_buat}}</td>
+        {% if x.linkbeli %}
+        <td><a href="{{x.linkbeli}}">View</a></td>
+        {% else %}
+        <td>-</td>
+        {% endif %}
+
+      </tr>
+      {% endfor %}
+
+    </tbody>
+  </table>
+  {% endif %}
+</div>
+
+{% endblock %}
