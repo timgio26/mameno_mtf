@@ -15,9 +15,9 @@
     </thead>
     <tbody>
       <tr>
-        <td>{{x.no_nota}}{{x.no_memo}}</td>
-        <td>{{x.judul_nota}}{{x.judul_memo}}</td>
-        <td>{{x.penulis_nota}}{{x.penulis_memo}}</td>
+        <td>{{x.no_nota}}{{x.no_memo}}{{x.no_beli}}</td>
+        <td>{{x.judul_nota}}{{x.judul_memo}}{{x.judul_beli}}</td>
+        <td>{{x.penulis_nota}}{{x.penulis_memo}}{{x.penulis_beli}}</td>
         <td>{{x.tanggal_buat}}</td>
 
       </tr>
@@ -42,6 +42,24 @@
     {{wtf.form_field(form.no,value=x.no_nota)}}
     {{form.submit()}}
 
+  </form>
+</div>
+{% elif x.penulis_beli %}
+<div class="container">
+  <form method="POST">
+    {{form.hidden_tag()}}
+    {{wtf.form_field(form.pic,value=x.penulis_beli)}}
+    {{wtf.form_field(form.judul,value=x.judul_beli)}}
+
+    {% if x.linkbeli=='None' %}
+    {{wtf.form_field(form.url,placeholder=x.linkbeli)}}
+    {% else %}
+    {{wtf.form_field(form.url,value=x.linkbeli)}}
+    {% endif %}
+
+    {{wtf.form_field(form.tgl_update,value=x.tanggal_buat)}}
+    {{wtf.form_field(form.no,value=x.no_beli)}}
+    {{form.submit()}}
   </form>
 </div>
 {% else %}
