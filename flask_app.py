@@ -522,7 +522,7 @@ def tambah_all():
                 db.session.commit()
                 return redirect(url_for('result',type='beli',id=newbeli.id))
             elif(form.type.data=="Nota Bersama"):
-                divlist=['div1','div2','div3','div4:','div5']
+                divlist=['div1','div2','div3','div4','div5']
                 list= "-".join([request.form.get(x).upper().replace(" ",'') for x in divlist if request.form.get(x)])
                 now=date.today()
                 if (now.month == 1):
@@ -822,7 +822,7 @@ def th():
                 db.session.commit()
                 return redirect(url_for('result',type="memo",id=newmemo.id))
             elif(form.type.data=="Nota Bersama"):
-                divlist=['div1','div2','div3','div4:','div5']
+                divlist=['div1','div2','div3','div4','div5']
                 list= "-".join([request.form.get(x).upper().replace(" ",'') for x in divlist if request.form.get(x)])
                 tgl=form.tanggal.data
                 now=form.tanggal.data
