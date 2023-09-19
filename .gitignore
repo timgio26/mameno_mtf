@@ -3,6 +3,7 @@
 config.py
 *.sqlite
 venv/
-migrations/
-
-
+migrations/*
+__pycache__/*
+versions/*
+*.pyc

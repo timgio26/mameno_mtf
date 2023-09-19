@@ -52,6 +52,16 @@ class tbl_beli(db.Model):
     no_beli=db.Column(db.Text)
     linkbeli=db.Column(db.Text)
 
+class tbl_bersama(db.Model):
+    id=db.Column(db.Integer, primary_key=True)
+    penulis=db.Column(db.Text)
+    judul=db.Column(db.Text)
+    tanggal_buat=db.Column(db.Date)
+    tahun=db.Column(db.Integer)
+    no=db.Column(db.Integer)
+    no_bersama=db.Column(db.Text)
+    link=db.Column(db.Text)
+
 class alluser(db.Model):
     id=db.Column(db.Integer, primary_key=True)
     username=db.Column(db.String(20),unique=True)
@@ -161,7 +171,7 @@ class formupdate(FlaskForm):
     submit=SubmitField('Update')
 
 class tambah_historis(FlaskForm):
-    dropdown_list = ['Nota','Memo','Form Pembelian']
+    dropdown_list = ['Nota','Memo','Form Pembelian','Nota Bersama']
     type=SelectField('Jenis:',choices=dropdown_list,validators=[DataRequired()])
     pic=StringField('PIC:',validators=[DataRequired()])
     judul=StringField('Judul:',validators=[DataRequired()])
@@ -418,7 +428,9 @@ def delsppi(id):
 def tambah_all():
     if session.get('user',None):
         form=tambah_baru()
-        if form.validate_on_submit():
+        # if form.validate_on_submit():
+        if request.method=='POST':
+            print(form.type.data)
             if (form.type.data=="Nota"):
                 now=date.today()
                 if (now.month == 1):
@@ -465,7 +477,6 @@ def tambah_all():
                 db.session.commit()
                 return redirect(url_for('result',type='nota',id=newnota.id))
             elif(form.type.data=="Form Pembelian"):
-                
                 now=date.today()
                 if (now.month == 1):
                     mr="I"
@@ -510,8 +521,53 @@ def tambah_all():
                 db.session.add(newbeli)
                 db.session.commit()
                 return redirect(url_for('result',type='beli',id=newbeli.id))
+            elif(form.type.data=="Nota Bersama"):
+                divlist=['div1','div2','div3','div4:','div5']
+                list= "-".join([request.form.get(x).upper().replace(" ",'') for x in divlist if request.form.get(x)])
+                now=date.today()
+                if (now.month == 1):
+                    mr="I"
+                elif (now.month == 2):
+                    mr="II"
+                elif (now.month == 3):
+                    mr="III"
+                elif (now.month == 4):
+                    mr="IV"
+                elif (now.month == 5):
+                    mr="V"
+                elif (now.month == 6):
+                    mr="VI"
+                elif (now.month == 7):
+                    mr="VII"
+                elif (now.month == 8):
+                    mr="VIII"
+                elif (now.month == 9):
+                    mr="IX"
+                elif (now.month == 10):
+                    mr="X"
+                elif (now.month == 11):
+                    mr="XI"
+                else:
+                    mr="XII"
 
+                max = db.session.query(func.max(tbl_bersama.no)).filter_by(tahun=now.year).scalar()
+                if(max == None):
+                    no=1
+                else:
+                    no=max+1
 
+                if len(str(no))==1:
+                    adj="00"
+                elif len(str(no))==2:
+                    adj="0"
+                else:
+                    adj=""
+
+                no_beli=f"{adj}{no}/Nota Bersama-{list}/MTF/{mr}/{now.year}"
+                newdata=tbl_bersama(penulis=session['namauser'],judul=form.judul.data,tanggal_buat=now,tahun=now.year,no=no,no_bersama=no_beli)
+                db.session.add(newdata)
+                db.session.commit()
+                return redirect(url_for('result',type='bersama',id=newdata.id))
             else:
                 now=date.today()
                 # newmemo=tbl_memo(penulis_memo=session['namauser'],judul_memo=form.judul.data,tanggal_buat=now,tahun_memo=now.year)
@@ -571,6 +627,8 @@ def result(type,id):
         x=tbl_memo.query.get(id)
     elif type=='beli':
         x=tbl_beli.query.get(id)
+    elif type=='bersama':
+        x=tbl_bersama.query.get(id)
     else:
         x=tbl_nota.query.get(id)
     return render_template('result.html',x=x)
@@ -606,6 +664,13 @@ def delbeli(id):
     db.session.delete(delitem)
     db.session.commit()
     return redirect(url_for('list_beli'))
+
+@app.route('/delbersama/<id>',methods=['GET', 'POST'])
+def delbersama(id):
+    delitem=tbl_bersama.query.get(id)
+    db.session.delete(delitem)
+    db.session.commit()
+    return redirect(url_for('list_bersama'))
 
 @app.route('/updatenota/<id>',methods=['GET', 'POST'])
 def updatenota(id):
@@ -663,10 +728,20 @@ def list_beli():
     if session.get('user',None):
 
         df=tbl_beli.query.all()
-        return  render_template ("list_beli.html",df=df)
+        return  render_template ("list_beli.html",df=df,judul='Form Pembelian')
     else:
         return redirect(url_for('masuk'))
 
+@app.route('/list_bersama',methods=['GET','POST'])
+def list_bersama():
+
+    if session.get('user',None):
+
+        df=tbl_bersama.query.all()
+        return  render_template ("list_beli.html",df=df,judul='Nota Bersama')
+    else:
+        return redirect(url_for('masuk'))
+    
 @app.route('/delmemo/<id>',methods=['GET', 'POST'])
 def delmemo(id):
     delmemo=tbl_memo.query.get(id)
@@ -746,6 +821,60 @@ def th():
                 db.session.add(newmemo)
                 db.session.commit()
                 return redirect(url_for('result',type="memo",id=newmemo.id))
+            elif(form.type.data=="Nota Bersama"):
+                divlist=['div1','div2','div3','div4:','div5']
+                list= "-".join([request.form.get(x).upper().replace(" ",'') for x in divlist if request.form.get(x)])
+                tgl=form.tanggal.data
+                now=form.tanggal.data
+
+                # db.session.add(newmemo)
+                # db.session.commit()
+                if (now.month == 1):
+                    mr="I"
+                elif (now.month == 2):
+                    mr="II"
+                elif (now.month == 3):
+                    mr="III"
+                elif (now.month == 4):
+                    mr="IV"
+                elif (now.month == 5):
+                    mr="V"
+                elif (now.month == 6):
+                    mr="VI"
+                elif (now.month == 7):
+                    mr="VII"
+                elif (now.month == 8):
+                    mr="VIII"
+                elif (now.month == 9):
+                    mr="IX"
+                elif (now.month == 10):
+                    mr="X"
+                elif (now.month == 11):
+                    mr="XI"
+                else:
+                    mr="XII"
+                # newmemo=tbl_memo.query.get(newmemo.id)
+                if form.nomor.data:
+                    no=form.nomor.data
+                else:
+                    max = db.session.query(func.max(tbl_beli.no)).filter_by(tahun_beli=tgl.year).scalar()
+                    if(max == None):
+                        no=1
+                    else:
+                        no=max+1
+                if len(str(no))==1:
+                    adj="00"
+                elif len(str(no))==2:
+                    adj="0"
+                else:
+                    adj=""
+                # no_memo=f"{adj}{no}/FPPA-ARM/MTF/{mr}/{tgl.year}"
+                no_nota=f"{adj}{no}/Nota Bersama-{list}/MTF/{mr}/{tgl.year}"
+
+                newitem=tbl_bersama(penulis=form.pic.data,judul=form.judul.data,tanggal_buat=form.tanggal.data,tahun=tgl.year,no=no,no_bersama=no_nota)
+                db.session.add(newitem)
+                db.session.commit()
+                return redirect(url_for('result',type="bersama",id=newitem.id))
             elif(form.type.data=="Form Pembelian"):
                 tgl=form.tanggal.data
                 now=form.tanggal.data
