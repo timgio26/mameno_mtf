@@ -34,7 +34,11 @@
         <td>{{x.judul_nota}}</td>
         <td>{{x.penulis_nota}}</td>
         <td>{{x.tanggal_buat}}</td>
-        <td>{{x.linknota}}</td>
+        {% if x.linknota %}
+        <td><a href="{{x.linknota}}">View</a></td>
+        {% else %}
+        <td>-</td>
+        {% endif %}
         <td>
           <a class="btn btn-warning btn-sm" href="/updatenota/{{x.id}}" role="button">Update</a>
           <a class="btn btn-danger btn-sm" href="/delnota/{{x.id}}" role="button">Hapus</a>
@@ -92,4 +96,4 @@
     ordering:  false
 } );
 </script>
-{% endblock %}  
+{% endblock %}

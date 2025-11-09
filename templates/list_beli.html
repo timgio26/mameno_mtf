@@ -26,12 +26,17 @@
         <td>{{x.judul_beli}}{{x.judul}}</td>
         <td>{{x.penulis_beli}}{{x.penulis}}</td>
         <td>{{x.tanggal_buat}}</td>
-        <td>{{x.linkbeli}}{{x.link}}</td>
+        {% if x.linkbeli %}
+        <td><a href="{{x.linkbeli}}{{x.link}}">View</a></td>
+        {% else %}
+        <td>-</td>
+        {% endif %}
         <td>
           {% if judul=='Form Pembelian' %}
           <a class="btn btn-warning btn-sm" href="/updatefbeli/{{x.id}}" role="button">Update</a>
           <a class="btn btn-danger btn-sm" href="/delbeli/{{x.id}}" role="button">Hapus</a>
           {% else %}
+          <a class="btn btn-warning btn-sm" href="/updatebersama/{{x.id}}" role="button">Update</a>
           <a class="btn btn-danger btn-sm" href="/delbersama/{{x.id}}" role="button">Hapus</a>
           {% endif %}
         </td>
@@ -59,12 +64,12 @@
       {% for x in df %}
       <tr>
 
-        <td>{{x.no_beli}}</td>
-        <td>{{x.judul_beli}}</td>
-        <td>{{x.penulis_beli}}</td>
+        <td>{{x.no_beli}}{{x.no_bersama}}</td>
+        <td>{{x.judul_beli}}{{x.judul}}</td>
+        <td>{{x.penulis_beli}}{{x.penulis}}</td>
         <td>{{x.tanggal_buat}}</td>
         {% if x.linkbeli %}
-        <td><a href="{{x.linkbeli}}">View</a></td>
+        <td><a href="{{x.linkbeli}}{{x.link}}">View</a></td>
         {% else %}
         <td>-</td>
         {% endif %}

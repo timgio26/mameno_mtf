@@ -471,7 +471,7 @@ def tambah_all():
                 else:
                     adj=""
 
-                no_nota=f"{adj}{no}/Nota-ARM/MTF/{mr}/{now.year}"
+                no_nota=f"{adj}{no}/Nota-CARM/MTF/{mr}/{now.year}"
                 newnota=tbl_nota(penulis_nota=session['namauser'],judul_nota=form.judul.data,tanggal_buat=now,tahun_nota=now.year,no=no,no_nota=no_nota)
                 db.session.add(newnota)
                 db.session.commit()
@@ -516,7 +516,7 @@ def tambah_all():
                 else:
                     adj=""
 
-                no_beli=f"{adj}{no}/FPPA-ARM/MTF/{mr}/{now.year}"
+                no_beli=f"{adj}{no}/FPPA-CARM/MTF/{mr}/{now.year}"
                 newbeli=tbl_beli(penulis_beli=session['namauser'],judul_beli=form.judul.data,tanggal_buat=now,tahun_beli=now.year,no=no,no_beli=no_beli)
                 db.session.add(newbeli)
                 db.session.commit()
@@ -609,7 +609,7 @@ def tambah_all():
                     adj="0"
                 else:
                     adj=""
-                no_memo=f"{adj}{no}/Memo-ARM/MTF/{mr}/{now.year}"
+                no_memo=f"{adj}{no}/Memo-CARM/MTF/{mr}/{now.year}"
                 # newmemo.no_memo=no_memo
                 # print(now.date)
                 newmemo=tbl_memo(penulis_memo=session['namauser'],judul_memo=form.judul.data,tanggal_buat=now,tahun_memo=now.year,no=no,no_memo=no_memo)
@@ -687,7 +687,7 @@ def updatenota(id):
         return redirect(url_for('list_nota'))
     else:
         return render_template('update.html',x=upnota,form=form)
-    
+
 @app.route('/updatefbeli/<id>',methods=['GET', 'POST'])
 def updatefbeli(id):
     form=formupdate()
@@ -721,7 +721,7 @@ def list_memo():
             return  render_template ("list_memo.html",df=df,form=form,year=year)
     else:
         return redirect(url_for('masuk'))
-    
+
 @app.route('/list_beli',methods=['GET','POST'])
 def list_beli():
 
@@ -741,7 +741,7 @@ def list_bersama():
         return  render_template ("list_beli.html",df=df,judul='Nota Bersama')
     else:
         return redirect(url_for('masuk'))
-    
+
 @app.route('/delmemo/<id>',methods=['GET', 'POST'])
 def delmemo(id):
     delmemo=tbl_memo.query.get(id)
@@ -815,7 +815,7 @@ def th():
                     adj="0"
                 else:
                     adj=""
-                no_memo=f"{adj}{no}/Memo-ARM/MTF/{mr}/{tgl.year}"
+                no_memo=f"{adj}{no}/Memo-CARM/MTF/{mr}/{tgl.year}"
 
                 newmemo=tbl_memo(penulis_memo=form.pic.data,judul_memo=form.judul.data,tanggal_buat=form.tanggal.data,tahun_memo=tgl.year,no=no,no_memo=no_memo)
                 db.session.add(newmemo)
@@ -868,7 +868,7 @@ def th():
                     adj="0"
                 else:
                     adj=""
-                # no_memo=f"{adj}{no}/FPPA-ARM/MTF/{mr}/{tgl.year}"
+                # no_memo=f"{adj}{no}/FPPA-CARM/MTF/{mr}/{tgl.year}"
                 no_nota=f"{adj}{no}/Nota Bersama-{list}/MTF/{mr}/{tgl.year}"
 
                 newitem=tbl_bersama(penulis=form.pic.data,judul=form.judul.data,tanggal_buat=form.tanggal.data,tahun=tgl.year,no=no,no_bersama=no_nota)
@@ -920,7 +920,7 @@ def th():
                     adj="0"
                 else:
                     adj=""
-                no_memo=f"{adj}{no}/FPPA-ARM/MTF/{mr}/{tgl.year}"
+                no_memo=f"{adj}{no}/FPPA-CARM/MTF/{mr}/{tgl.year}"
 
                 newitem=tbl_beli(penulis_beli=form.pic.data,judul_beli=form.judul.data,tanggal_buat=form.tanggal.data,tahun_beli=tgl.year,no=no,no_beli=no_memo)
                 db.session.add(newitem)
@@ -971,7 +971,7 @@ def th():
                     adj="0"
                 else:
                     adj=""
-                no_nota=f"{adj}{no}/Nota-ARM/MTF/{mr}/{tgl.year}"
+                no_nota=f"{adj}{no}/Nota-CARM/MTF/{mr}/{tgl.year}"
                 newnota=tbl_nota(penulis_nota=form.pic.data,judul_nota=form.judul.data,tanggal_buat=form.tanggal.data,tahun_nota=tgl.year,no=no,no_nota=no_nota)
                 db.session.add(newnota)
                 db.session.commit()
