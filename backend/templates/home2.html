@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block content %}
+{% import 'bootstrap/wtf.html' as wtf %}
+<h1>Welcome</h1>
+<!--<div class="container">-->
+<!--    <ul class="nav flex-column">-->
+
+<!--  <li class="nav-item">-->
+<!--    <a class="nav-link" href="{{url_for('index')}}">Master Memo Nota</a>-->
+<!--  </li>-->
+<!--  <li class="nav-item">-->
+<!--    <a class="nav-link" href="{{url_for('complaint')}}">QA - Complaint</a>-->
+<!--  </li>-->
+
+<!--</ul>-->
+<!--</div>-->
+
+<div class='container'>
+    <div class='row justify-content-start'>
+        <div class='col-md-auto'>
+            <div class="card text-center" style="width: 15rem;">
+                <img src="static/2.jpg" class="card-img-top">
+                <div class="card-body">
+                <h5>QA - Complaint</h5>
+                <!--<p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>-->
+                <a href="{{url_for('complaint')}}" class="btn btn-outline-primary">Click Here</a>
+                </div>
+            </div>
+        </div>
+        <div class='col-md-auto'>
+            <div class="card text-center" style="width: 15rem;">
+                <img src="static/1.jpg" class="card-img-top">
+                <div class="card-body">
+                <h5>Master Memo Nota</h5>
+                <!--<p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>-->
+                <a href="{{url_for('index')}}" class="btn btn-outline-primary">Click Here</a>
+                </div>
+            </div>
+        </div>
+        <div class='col-md-auto'>
+            <div class="card text-center" style="width: 15rem;">
+                <img src="static/3.jpg" class="card-img-top">
+                <div class="card-body">
+                <h5>Master SPPI</h5>
+                <!--<p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>-->
+                <a href="{{url_for('sppi')}}" class="btn btn-outline-primary">Click Here</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+{% endblock %}

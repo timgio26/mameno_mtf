@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block content %}
+{% import 'bootstrap/wtf.html' as wtf %}
+<h1>Edit Complaint <b>{{comp.no_agr}}</b></h1>
+<div class="container">
+<form method="POST">
+  {{form.hidden_tag()}}
+  {{wtf.form_field(form.no_agr)}}
+  {{wtf.form_field(form.nama)}}
+  {{wtf.form_field(form.area_cg)}}
+  {{wtf.form_field(form.cg_name)}}
+  {{wtf.form_field(form.class_comp)}}
+  {{wtf.form_field(form.agent_notes)}}
+  {{wtf.form_field(form.status)}}
+  {{form.submit()}}
+
+</form>
+
+</div>
+{% endblock %}

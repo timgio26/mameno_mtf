@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% block content %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+<div class="container">
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">Nomor </th>
+        <th scope="col">Judul </th>
+        <th scope="col">Nama PIC</th>
+        <th scope="col">Tanggal Buat</th>
+
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>{{x.no_nota}}{{x.no_memo}}{{x.no_beli}}</td>
+        <td>{{x.judul_nota}}{{x.judul_memo}}{{x.judul_beli}}</td>
+        <td>{{x.penulis_nota}}{{x.penulis_memo}}{{x.penulis_beli}}</td>
+        <td>{{x.tanggal_buat}}</td>
+
+      </tr>
+
+    </tbody>
+  </table>
+</div>
+{% if x.penulis_nota %}
+<div class="container">
+  <form method="POST">
+    {{form.hidden_tag()}}
+    {{wtf.form_field(form.pic,value=x.penulis_nota)}}
+    {{wtf.form_field(form.judul,value=x.judul_nota)}}
+
+    {% if x.linknota=='None' %}
+    {{wtf.form_field(form.url,placeholder=x.linknota)}}
+    {% else %}
+    {{wtf.form_field(form.url,value=x.linknota)}}
+    {% endif %}
+
+    {{wtf.form_field(form.tgl_update,value=x.tanggal_buat)}}
+    {{wtf.form_field(form.no,value=x.no_nota)}}
+    {{form.submit()}}
+
+  </form>
+</div>
+{% elif x.penulis_beli %}
+<div class="container">
+  <form method="POST">
+    {{form.hidden_tag()}}
+    {{wtf.form_field(form.pic,value=x.penulis_beli)}}
+    {{wtf.form_field(form.judul,value=x.judul_beli)}}
+
+    {% if x.linkbeli=='None' %}
+    {{wtf.form_field(form.url,placeholder=x.linkbeli)}}
+    {% else %}
+    {{wtf.form_field(form.url,value=x.linkbeli)}}
+    {% endif %}
+
+    {{wtf.form_field(form.tgl_update,value=x.tanggal_buat)}}
+    {{wtf.form_field(form.no,value=x.no_beli)}}
+    {{form.submit()}}
+  </form>
+</div>
+{% else %}
+<div class="container">
+  <form method="POST">
+    {{form.hidden_tag()}}
+    {{wtf.form_field(form.pic,value=x.penulis_memo)}}
+    {{wtf.form_field(form.judul,value=x.judul_memo)}}
+
+    {% if x.linkmemo=='None' %}
+    {{wtf.form_field(form.url,placeholder=x.linkmemo)}}
+    {% else %}
+    {{wtf.form_field(form.url,value=x.linkmemo)}}
+    {% endif %}
+
+    {{wtf.form_field(form.tgl_update,value=x.tanggal_buat)}}
+    {{wtf.form_field(form.no,value=x.no_memo)}}
+    {{form.submit()}}
+
+  </form>
+</div>
+{% endif %}
+{% endblock %}

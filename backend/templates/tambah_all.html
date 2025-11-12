@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block content %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+<div class="container">
+  <h1>Dapatkan Nomor Nota & Memo di Sini !</h1>
+  <br>
+  <div class="container-fluid">
+    <form method="POST" enctype=multipart/form-data>
+      {{form.hidden_tag()}}
+      {{wtf.form_field(form.type)}}
+      {{wtf.form_field(form.judul)}}
+      <br>
+      <div class="row" id="divinp" style="display: none;">
+      <p id="demo"></p>
+      <div class="col">
+        <input class="form-control" type="text" placeholder="" id="div1" name="div1">
+      </div>
+      <div class="col">
+        <input class="form-control" type="text" placeholder="" id="div2" name="div2">
+      </div>
+      <div class="col">
+        <input class="form-control" type="text" placeholder="" id="div3" name="div3">
+      </div>
+      <div class="col">
+        <input class="form-control" type="text" placeholder="" id="div4" name="div4">
+      </div>
+      <div class="col">
+        <input class="form-control" type="text" placeholder="" id="div5" name="div5">
+      </div>
+      </div>
+      
+      <br>
+      {{form.submit()}}
+      
+    </form>
+
+  </div>
+
+</div>
+{% endblock %}

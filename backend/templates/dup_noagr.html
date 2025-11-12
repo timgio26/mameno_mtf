@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block content %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+
+<h3>Error : Nomor Kontrak Sudah Terdaftar</h3>
+<a class="btn btn-primary" href="{{url_for('complaint')}}" role="button">Kembali</a>
+
+
+{% endblock %}
