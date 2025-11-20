@@ -182,9 +182,10 @@ def get_nota_list():
 
 ################### DELETE
 
-@main_bp.delete('/api/nota/<int:id>')
+@main_bp.delete('/api/nota/<id>')
 def delete_nota(id):
-    nota = TblNota.query.get_or_404(id)
+    print(id)
+    nota = TblNota.query.get_or_404(UUID(id))
     db.session.delete(nota)
     db.session.commit()
     return jsonify({
@@ -192,7 +193,7 @@ def delete_nota(id):
         "deleted_id": id
     }), 200
 
-@main_bp.delete('/api/memo/<int:id>')
+@main_bp.delete('/api/memo/<id>')
 def delete_memo(id):
     memo = TblMemo.query.get_or_404(id)
 
@@ -204,7 +205,7 @@ def delete_memo(id):
         "deleted_id": id
     }), 200
 
-@main_bp.delete('/api/beli/<int:id>')
+@main_bp.delete('/api/beli/<id>')
 def delete_beli(id):
     item = TblBeli.query.get_or_404(id)
     db.session.delete(item)
@@ -214,7 +215,7 @@ def delete_beli(id):
         "deleted_id": id
     }), 200
 
-@main_bp.delete('/api/bersama/<int:id>')
+@main_bp.delete('/api/bersama/<id>')
 def delete_bersama(id):
     item = TblBersama.query.get_or_404(id)
     db.session.delete(item)
@@ -226,7 +227,7 @@ def delete_bersama(id):
 
 ################### UPDATE
 
-@main_bp.put('/api/nota/<int:id>')
+@main_bp.put('/api/nota/<id>')
 def update_nota(id):
     upnota = TblNota.query.get_or_404(id)
     data = request.get_json()
@@ -245,7 +246,7 @@ def update_nota(id):
         "updated": upnota.to_dict()
     }), 200
 
-@main_bp.put('/api/memo/<int:id>')
+@main_bp.put('/api/memo/<id>')
 def update_memo(id):
     upmemo = TblMemo.query.get_or_404(id)
     data = request.get_json()
@@ -263,7 +264,7 @@ def update_memo(id):
         "updated": upmemo.to_dict()
     }), 200
 
-@main_bp.put('/api/beli/<int:id>')
+@main_bp.put('/api/beli/<id>')
 def update_beli(id):
     upmemo = TblBeli.query.get_or_404(id)
     data = request.get_json()
@@ -282,7 +283,7 @@ def update_beli(id):
         "updated": upmemo.to_dict()
     }), 200
 
-@main_bp.put('/api/bersama/<int:id>')
+@main_bp.put('/api/bersama/<id>')
 def update_bersama(id):
     data = request.get_json()
     now = date.today()

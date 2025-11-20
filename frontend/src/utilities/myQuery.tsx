@@ -72,11 +72,19 @@ type IAddData = {
   divisi?:string[];
 }
 
+const AddDataRespSchema = z.object({
+  // id:z.string(),
+  no_nota:z.string()
+
+})
+
 export function useAddData(type:string|undefined){
   const queryClient = useQueryClient();
-  const {mutate,isPending} = useMutation({
+  const {data,mutate,isPending} = useMutation({
     mutationFn:async(data:IAddData)=>{
+
       const {token,decoded} = getCurrentUser()
+
       let url
       if(type == "nota"){
         url = "api/nota"
@@ -94,7 +102,8 @@ export function useAddData(type:string|undefined){
         user_id : decoded.sub
       }
       const resp = await axios.post(url,reqBody)
-      return resp.data
+      const parseResult = AddDataRespSchema.safeParse(resp.data)
+      return parseResult.data
     },
     onError:()=>{
       toast.error("Can't add data, try again later")
@@ -104,7 +113,7 @@ export function useAddData(type:string|undefined){
       toast.success("Data added")
     }
   })
-  return {mutate,isPending}
+  return {mutate,isPending,data}
 }
 
 const NotaSchema = z.object({
@@ -117,6 +126,8 @@ const NotaSchema = z.object({
   tanggal_buat:z.string(),
 })
 
+export type INota = z.infer<typeof NotaSchema>;
+
 const NotaRespSchema = z.object({data:z.array(NotaSchema)})
 
 export function useGetNota(){
@@ -125,7 +136,8 @@ export function useGetNota(){
     queryFn:async()=>{
       const resp = await axios.get('api/nota')
       return resp.data
-    }
+    },
+    retry:false
   })
 
   if(isError){
@@ -142,8 +154,6 @@ export function useGetNota(){
 
 }
 
-
-
 const MemoSchema = z.object({
   id:z.string(),
   judul_memo:z.string(),
@@ -155,7 +165,6 @@ const MemoSchema = z.object({
 })
 
 const MemoRespSchema = z.object({data:z.array(MemoSchema)})
-
 
 export function useGetMemo(){
   const {data,isLoading,isError} =  useQuery({
@@ -170,10 +179,7 @@ export function useGetMemo(){
     toast.error("Can't load data, please try again later")
   }
   
-
   const parseResult = MemoRespSchema.safeParse(data);
-
-  console.log(data,parseResult)
   
   return {
     data: parseResult.data?.data,
@@ -181,4 +187,24 @@ export function useGetMemo(){
     isError
   };
 
+}
+
+export function useDelNota(){
+  const queryClient = useQueryClient();
+  const {mutate,isPending} = useMutation({
+    mutationFn:async(id:string)=>{
+      const resp = await axios.delete(`api/nota/${id}`)
+      if(resp.status!=200){
+        throw new Error("Can't delete data, try again later")
+      }
+    },
+    onError:(e)=>{
+      toast.error(e.message)
+    },
+    onSuccess:()=>{
+      queryClient.invalidateQueries({ queryKey: ['nota'] });
+      toast.success("Data deleted")
+    }
+  })
+  return {mutate,isPending}
 }

@@ -4,7 +4,7 @@ import { FaPlus } from "react-icons/fa";
 import { useState } from "react";
 import { PopupModal } from "../components/PopUpModal";
 import { NewForm } from "../components/NewForm";
-// import { CiLogout } from "react-icons/ci";
+
 
 export function Base() {
   const year = new Date().getFullYear();
@@ -30,13 +30,15 @@ export function Base() {
           <nav className="flex flex-col p-6 gap-6">
             <NavLink to="/" className="text-base font-medium hover:text-blue-600">Nota</NavLink>
             <NavLink to="/memo" className="text-base font-medium hover:text-blue-600">Memo</NavLink>
-            <NavLink to="/" className="text-base font-medium hover:text-blue-600">Form Pembelian</NavLink>
-            <NavLink to="/" className="text-base font-medium hover:text-blue-600">Nota Bersama</NavLink>
+            <NavLink to="/pembelian" className="text-base font-medium hover:text-blue-600">Form Pembelian</NavLink>
+            <NavLink to="/bersama" className="text-base font-medium hover:text-blue-600">Nota Bersama</NavLink>
           </nav>
+
         </div>
 
         {/* Bottom Section */}
         <div className="p-6 border-t border-slate-200">
+          
           <div className="mb-4 text-sm text-slate-500 leading-relaxed">
             <p className="font-medium tracking-wide">&copy; {year} AR MTF</p>
             <p className="italic text-slate-400">
