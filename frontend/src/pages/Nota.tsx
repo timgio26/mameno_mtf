@@ -1,16 +1,41 @@
 import { useState } from "react";
 import { PopupModal } from "../components/PopUpModal";
-import { useGetNota } from "../utilities/myQuery";
+import { type INota, useDelNota, useGetNota } from "../utilities/myQuery";
 import {
   IoIosTrash,
-  IoIosEye,
+  // IoIosEye,
   IoMdCreate,
   IoIosCloseCircleOutline,
 } from "react-icons/io";
+import { EditForm } from "../components/EditForm";
+import { Error } from "../components/Error";
+import { Loading } from "../components/Loading";
 
 export function Nota() {
   const { data, isLoading, isError } = useGetNota();
+  const {mutate:deleteNota, isPending:isDeleting} = useDelNota()
+  const [selectedData,setSelectedData] = useState<INota>()
   const [showDelPopup, setShowDelPopup] = useState<boolean>(false);
+  const [showEditPopup, setShowEditPopup] = useState<boolean>(false);
+  
+
+  function handleDeleteNota(){
+    if(!selectedData)return;
+    deleteNota(selectedData.id,{
+      onSuccess:()=>{
+        setSelectedData(undefined)
+        setShowDelPopup(false)
+      }
+    })
+  }
+
+  if(isLoading){
+    return(<Loading/>)
+  }
+
+  if(isError){
+    return(<Error/>)
+  }
 
   return (
     <div>
@@ -36,8 +61,8 @@ export function Nota() {
         </div>
       </div>
 
-
-      <div>
+      {data?(
+              <div>
         <table className="min-w-full divide-y divide-slate-200 rounded-xl overflow-hidden shadow-lg bg-white">
           <thead className="bg-slate-100 text-slate-700 text-sm font-semibold tracking-wide">
             <tr>
@@ -61,10 +86,18 @@ export function Nota() {
                   {/* <button className="hover:text-indigo-600 transition">
                     <IoIosEye size={18} />
                   </button> */}
-                  <button className="hover:text-green-600 transition">
+                  <button className="hover:text-green-600 transition"
+                  onClick={()=>{
+                    setSelectedData(each);
+                    setShowEditPopup(true)
+                    }}>
                     <IoMdCreate size={18} />
                   </button>
-                  <button className="hover:text-red-600 transition" onClick={()=>setShowDelPopup(true)}>
+                  <button className="hover:text-red-600 transition" 
+                  onClick={()=>{
+                    setSelectedData(each);
+                    setShowDelPopup(true)
+                    }}>
                     <IoIosTrash size={18} />
                   </button>
                 </td>
@@ -73,6 +106,16 @@ export function Nota() {
           </tbody>
         </table>
       </div>
+      ):(
+                      <div className="flex flex-col items-center justify-center text-center text-gray-500 py-12">
+          <p className="text-lg font-medium">No customer found.</p>
+          <p className="text-sm mt-1">Start by adding a new customer below.</p>
+        </div>
+      )}
+
+
+
+
 
       {/* Hidden Pop up */}
       <PopupModal visible={showDelPopup}>
@@ -96,15 +139,18 @@ export function Nota() {
                   Cancel
                 </button>
                 <button
-                //   onClick={handleDeleteUser}
+                  onClick={handleDeleteNota}
                   data-testid="confirmButton"
                   className="px-4 py-2 rounded-full bg-red-600 hover:bg-red-700 text-sm font-medium text-white transition"
                 >
-                  {/* {isDeleting ? "Loading" : "Delete"} */}
-                  Delete
+                  {isDeleting ? "Loading" : "Delete"}
+                  {/* Delete */}
                 </button>
               </div>
-            </PopupModal>
+      </PopupModal>
+      {selectedData&&
+      <PopupModal visible={showEditPopup} children={<EditForm setShowModal={setShowEditPopup} data={selectedData}/>}/>
+      }
     </div>
   );
 }

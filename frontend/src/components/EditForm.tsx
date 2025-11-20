@@ -1,62 +1,71 @@
-import { useEffect, useState } from "react";
-import { useAddData, useGetMemo } from "../utilities/myQuery";
+import { useState } from "react";
+import type { INota } from "../utilities/myQuery"
 
-type NewFormProp = {
-  setShowModal :React.Dispatch<React.SetStateAction<boolean>>
+type EditFormProp = {
+  setShowModal :React.Dispatch<React.SetStateAction<boolean>>;
+  data :INota
 }
 
-export function NewForm({setShowModal}:NewFormProp) {
-  const [judul, setJudul] = useState<string>();
-  const [kategori, setKategori] = useState<string>();
-  const [divisi, setDivisi] = useState<string>();
-  const [divisiList, setDivisiList] = useState<string[]>([]);
-  const {data,mutate,isPending} = useAddData(kategori)
-  const [result,setResult] = useState<string>()
-
-  useEffect(()=>{
-    setResult(data?.no_nota)
-  },[data])
-
-  function addDivisi() {
-    if (!divisi) return;
-    if (divisiList.includes(divisi))return;
-    setDivisiList((curstate) => [...curstate, divisi]);
-    setDivisi("")
-  }
-
-  function removeDivisi(idx:number){
-    setDivisiList((curstate)=>(curstate.filter((_,index)=>index!=idx)));
-  }
-
-  function submitForm(){
-    if(!judul||!kategori)return;
-    mutate({judul,divisi:divisiList})
-  }
-
-  return (
-    <div className="space-y-3 max-h-[80vh] overflow-y-auto">
-      {data ? (
+export function EditForm({setShowModal,data}:EditFormProp){
+    const [judulEdit,setJudulEdit] = useState<string>(data.judul_nota) 
+    const [urlEdit,setUrlEdit] =useState<string|null>(data.link_nota)
+    return(
+        <div className="space-y-3 max-h-[80vh] overflow-y-auto">
         <>
           {/* Header */}
           <div>
-            <h2 className="text-2xl font-bold text-slate-800">📝 New Nota</h2>
-          </div>
-          <div>
-            <span>Result : {result}</span>
-          </div>
-        </>
-      ) : (
-        <>
-          {/* Header */}
-          <div>
-            <h2 className="text-2xl font-bold text-slate-800">📝 New Nota</h2>
-            <p className="text-sm text-slate-500 mt-1">
+            <h2 className="text-2xl font-bold text-slate-800">📝 Edit Nota</h2>
+            {/* <p className="text-sm text-slate-500 mt-1">
               Fill in the details below to create a new nota or memo.
-            </p>
+            </p> */}
+          </div>
+
+        {/* NO Doc */}
+          <div className="flex flex-col gap-2">
+            
+            <span
+
+              className="text-sm font-semibold text-slate-700"
+            >
+                No Nota/Memo
+            </span>
+            <span
+              className="rounded-lg  border-slate-300 px-4 py-1 text-sm  resize-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition"
+              >
+                {data.no_nota}
+              </span>
+          </div>
+
+          {/* PIC */}
+          <div className="flex flex-col gap-2">
+            <span
+              className="text-sm font-semibold text-slate-700"
+            >
+                PIC
+            </span>
+            <span
+              className="rounded-lg  border-slate-300 px-4 py-1 text-sm  resize-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition"
+              >
+                {data.penulis_nota}
+              </span>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <span
+              className="text-sm font-semibold text-slate-700"
+            >
+                Tanggal
+            </span>
+            <span
+              className="rounded-lg  border-slate-300 px-4 py-1 text-sm  resize-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition"
+              >
+                {data.tanggal_buat}
+              </span>
           </div>
 
           {/* Judul */}
           <div className="flex flex-col gap-2">
+            
             <label
               htmlFor="Judul"
               className="text-sm font-semibold text-slate-700"
@@ -68,38 +77,14 @@ export function NewForm({setShowModal}:NewFormProp) {
               id="Judul"
               rows={2}
               className="rounded-lg border border-slate-300 px-4 py-2 text-sm shadow-sm resize-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition"
-              value={judul}
-              onChange={(e) => setJudul(e.target.value)}
+              value={judulEdit}
+              onChange={(e) => setJudulEdit(e.target.value)}
             />
           </div>
 
-          {/* Kategori */}
-          <div className="flex flex-col gap-2">
-            <label
-              htmlFor="Kategori"
-              className="text-sm font-semibold text-slate-700"
-            >
-              Kategori
-            </label>
-            <select
-              name="Kategori"
-              id="Kategori"
-              className="rounded-lg border border-slate-300 px-4 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition"
-              value={kategori}
-              onChange={(e) => setKategori(e.target.value)}
-            >
-              <option value="" hidden>
-                Select category
-              </option>
-              <option value="nota">Nota</option>
-              <option value="memo">Memo</option>
-              <option value="pembelian">Form Pembelian</option>
-              <option value="bersama">Nota Bersama</option>
-            </select>
-          </div>
 
           {/* Divisi List */}
-          {kategori == "bersama" && (
+          {/* {kategori == "bersama" && (
             <div
               className={`flex flex-col ${
                 divisiList.length > 0 ? "gap-2" : "gap-1"
@@ -138,22 +123,22 @@ export function NewForm({setShowModal}:NewFormProp) {
                   name="divisi"
                   id="divisi"
                   className="flex-1 rounded-lg border border-slate-300 px-4 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition"
-                  value={divisi}
-                  onChange={(e) => setDivisi(e.target.value)}
+                //   value={divisi}
+                //   onChange={(e) => setDivisi(e.target.value)}
                 />
                 <button
                   type="button"
-                  onClick={addDivisi}
+                //   onClick={addDivisi}
                   className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition font-semibold text-sm"
                 >
                   + Add
                 </button>
               </div>
             </div>
-          )}
+          )} */}
 
           {/* DocUrl */}
-          {/* <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2">
             <label
               htmlFor="url"
               className="text-sm font-semibold text-slate-700"
@@ -166,12 +151,12 @@ export function NewForm({setShowModal}:NewFormProp) {
               id="url"
               rows={2}
               className="rounded-lg border border-slate-300 px-4 py-2 text-sm shadow-sm resize-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition"
-              // value={judul}
-              // onChange={(e) => setJudul(e.target.value)}
+              value={urlEdit??undefined}
+              onChange={(e) => setUrlEdit(e.target.value)}
             />
-          </div> */}
+          </div>
         </>
-      )}
+
 
       {/* Actions */}
       <div className="pt-4 flex justify-end gap-4 border-t border-slate-200">
@@ -179,17 +164,18 @@ export function NewForm({setShowModal}:NewFormProp) {
           className="px-4 py-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium transition"
           onClick={() => setShowModal(false)}
         >
-          {result ? "Close" : "Cancel"}
+          {/* {result ? "Close" : "Cancel"} */}
+          Cancel
         </button>
-        {!result && (
+
           <button
             className="px-4 py-2 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition"
-            onClick={submitForm}
+            // onClick={submitForm}
           >
-            {isPending ? "Loading..." : "Submit"}
+            Update
+            {/* {isPending ? "Loading..." : "Submit"} */}
           </button>
-        )}
       </div>
     </div>
-  );
+    )
 }
