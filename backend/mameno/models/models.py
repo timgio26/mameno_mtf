@@ -86,7 +86,7 @@ class TblBeli(db.Model):
     def to_dict(self):
         return {
             "id": self.id,
-            # "penulis_beli": self.penulis_beli,
+            "penulis_beli": self.user.nama,
             "judul_beli": self.judul_beli,
             "tanggal_buat": self.tanggal_buat,
             # "tahun_beli": self.tahun_beli,
@@ -112,7 +112,7 @@ class TblBersama(db.Model):
     def to_dict(self):
         return {
             "id": self.id,
-            # "penulis": self.penulis,
+            "penulis": self.user.nama,
             "judul": self.judul,
             "tanggal_buat": self.tanggal_buat,
             # "tahun": self.tahun,

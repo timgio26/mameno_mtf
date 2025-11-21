@@ -10,6 +10,8 @@ import { ToastContainer } from "react-toastify";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Nota } from './pages/Nota';
 import { Memo } from './pages/Memo';
+import { Pembelian } from './pages/Pembelian';
+import { NotaBersama } from './pages/NotaBersama';
 
 const queryClient = new QueryClient();
 
@@ -23,6 +25,8 @@ createRoot(document.getElementById('root')!).render(
       <Route element={<Base/>}>
         <Route path="/" element={<Nota/>}/>
         <Route path="/memo" element={<Memo/>}/>
+        <Route path="/pembelian" element={<Pembelian/>}/>
+        <Route path="/bersama" element={<NotaBersama/>}/>
         <Route path="/auth" element={<Authentication/>}/>
       </Route>
     </Routes>

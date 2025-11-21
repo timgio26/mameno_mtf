@@ -61,8 +61,8 @@ export function Nota() {
         </div>
       </div>
 
-      {data?(
-              <div>
+      {data && data.length>0 ?(
+      <div>
         <table className="min-w-full divide-y divide-slate-200 rounded-xl overflow-hidden shadow-lg bg-white">
           <thead className="bg-slate-100 text-slate-700 text-sm font-semibold tracking-wide">
             <tr>
@@ -74,7 +74,7 @@ export function Nota() {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 text-sm text-slate-600">
-            {data?.map((each, idx) => (
+            {data.map((each, idx) => (
               <tr key={idx} className="hover:bg-slate-50 transition">
                 <td className="px-6 py-4 font-medium text-slate-800">
                   {each.no_nota}
@@ -107,9 +107,9 @@ export function Nota() {
         </table>
       </div>
       ):(
-                      <div className="flex flex-col items-center justify-center text-center text-gray-500 py-12">
-          <p className="text-lg font-medium">No customer found.</p>
-          <p className="text-sm mt-1">Start by adding a new customer below.</p>
+        <div className="flex flex-col items-center justify-center text-center text-gray-500 py-12">
+          <p className="text-lg font-medium">No data found.</p>
+          <p className="text-sm mt-1">Start by adding a new data below.</p>
         </div>
       )}
 

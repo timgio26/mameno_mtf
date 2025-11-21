@@ -146,7 +146,7 @@ def get_memo_list():
 def get_beli_list():
     records = TblBeli.query.all()
     return jsonify({
-        "judul": "Form Pembelian",
+        # "judul": "Form Pembelian",
         "data": [r.to_dict() for r in records]
     }), 200
 
@@ -195,7 +195,7 @@ def delete_nota(id):
 
 @main_bp.delete('/api/memo/<id>')
 def delete_memo(id):
-    memo = TblMemo.query.get_or_404(id)
+    memo = TblMemo.query.get_or_404(UUID(id))
 
     db.session.delete(memo)
     db.session.commit()
@@ -207,7 +207,7 @@ def delete_memo(id):
 
 @main_bp.delete('/api/beli/<id>')
 def delete_beli(id):
-    item = TblBeli.query.get_or_404(id)
+    item = TblBeli.query.get_or_404(UUID(id))
     db.session.delete(item)
     db.session.commit()
     return jsonify({
@@ -217,7 +217,7 @@ def delete_beli(id):
 
 @main_bp.delete('/api/bersama/<id>')
 def delete_bersama(id):
-    item = TblBersama.query.get_or_404(id)
+    item = TblBersama.query.get_or_404(UUID(id))
     db.session.delete(item)
     db.session.commit()
     return jsonify({
@@ -229,15 +229,15 @@ def delete_bersama(id):
 
 @main_bp.put('/api/nota/<id>')
 def update_nota(id):
-    upnota = TblNota.query.get_or_404(id)
+    upnota = TblNota.query.get_or_404(UUID(id))
     data = request.get_json()
 
     # Assign each attribute explicitly
     upnota.linknota = data.get('url', upnota.linknota)
-    upnota.penulis_nota = data.get('pic', upnota.penulis_nota)
+    # upnota.penulis_nota = data.get('pic', upnota.penulis_nota)
     upnota.judul_nota = data.get('judul', upnota.judul_nota)
-    upnota.no_nota = data.get('no', upnota.no_nota)
-    upnota.tanggal_buat = data.get('tgl_update', upnota.tanggal_buat)
+    # upnota.no_nota = data.get('no', upnota.no_nota)
+    # upnota.tanggal_buat = data.get('tgl_update', upnota.tanggal_buat)
 
     db.session.commit()
 
@@ -248,14 +248,14 @@ def update_nota(id):
 
 @main_bp.put('/api/memo/<id>')
 def update_memo(id):
-    upmemo = TblMemo.query.get_or_404(id)
+    upmemo = TblMemo.query.get_or_404(UUID(id))
     data = request.get_json()
 
     upmemo.linkmemo = data.get('url', upmemo.linkmemo)
-    upmemo.penulis_memo = data.get('pic', upmemo.penulis_memo)
+    # upmemo.penulis_memo = data.get('pic', upmemo.penulis_memo)
     upmemo.judul_memo = data.get('judul', upmemo.judul_memo)
-    upmemo.no_memo = data.get('no', upmemo.no_memo)
-    upmemo.tanggal_buat = data.get('tgl_update', upmemo.tanggal_buat)
+    # upmemo.no_memo = data.get('no', upmemo.no_memo)
+    # upmemo.tanggal_buat = data.get('tgl_update', upmemo.tanggal_buat)
 
     db.session.commit()
 
@@ -266,15 +266,15 @@ def update_memo(id):
 
 @main_bp.put('/api/beli/<id>')
 def update_beli(id):
-    upmemo = TblBeli.query.get_or_404(id)
+    upmemo = TblBeli.query.get_or_404(UUID(id))
     data = request.get_json()
 
     # Assign each attribute explicitly
     upmemo.linkbeli = data.get('url', upmemo.linkbeli)
-    upmemo.penulis_beli = data.get('pic', upmemo.penulis_beli)
+    # upmemo.penulis_beli = data.get('pic', upmemo.penulis_beli)
     upmemo.judul_beli = data.get('judul', upmemo.judul_beli)
-    upmemo.no_beli = data.get('no', upmemo.no_beli)
-    upmemo.tanggal_buat = data.get('tgl_update', upmemo.tanggal_buat)
+    # upmemo.no_beli = data.get('no', upmemo.no_beli)
+    # upmemo.tanggal_buat = data.get('tgl_update', upmemo.tanggal_buat)
 
     db.session.commit()
 

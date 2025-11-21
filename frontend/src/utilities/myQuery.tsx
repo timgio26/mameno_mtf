@@ -154,6 +154,53 @@ export function useGetNota(){
 
 }
 
+
+export function useDelNota(){
+  const queryClient = useQueryClient();
+  const {mutate,isPending} = useMutation({
+    mutationFn:async(id:string)=>{
+      const resp = await axios.delete(`api/nota/${id}`)
+      if(resp.status!=200){
+        throw new Error("Can't delete data, try again later")
+      }
+    },
+    onError:(e)=>{
+      toast.error(e.message)
+    },
+    onSuccess:()=>{
+      queryClient.invalidateQueries({ queryKey: ['nota'] });
+      toast.success("Data deleted")
+    }
+  })
+  return {mutate,isPending}
+}
+
+type IUpdate = {
+  id:string;
+  judul:string;
+  url:string|null|undefined; 
+}
+
+export function useUpdateNota(){
+  const queryClient = useQueryClient();
+  const {mutate,isPending} = useMutation({
+    mutationFn:async(data:IUpdate)=>{
+      const resp = await axios.put(`api/nota/${data.id}`,data)
+      if(resp.status!=200){
+        throw new Error("Can't update data, try again later.")
+      }
+    },
+    onError:(e)=>{
+      toast.error(e.message)
+    },
+    onSuccess:()=>{
+      queryClient.invalidateQueries({ queryKey: ['nota'] });
+      toast.success("Data updated")
+    }
+  })
+  return {mutate,isPending}
+}
+
 const MemoSchema = z.object({
   id:z.string(),
   judul_memo:z.string(),
@@ -163,6 +210,8 @@ const MemoSchema = z.object({
   penulis_memo:z.string(),
   tanggal_buat:z.string(),
 })
+
+export type IMemo = z.infer<typeof MemoSchema>;
 
 const MemoRespSchema = z.object({data:z.array(MemoSchema)})
 
@@ -189,11 +238,11 @@ export function useGetMemo(){
 
 }
 
-export function useDelNota(){
+export function useDelMemo(){
   const queryClient = useQueryClient();
   const {mutate,isPending} = useMutation({
     mutationFn:async(id:string)=>{
-      const resp = await axios.delete(`api/nota/${id}`)
+      const resp = await axios.delete(`api/memo/${id}`)
       if(resp.status!=200){
         throw new Error("Can't delete data, try again later")
       }
@@ -202,7 +251,165 @@ export function useDelNota(){
       toast.error(e.message)
     },
     onSuccess:()=>{
-      queryClient.invalidateQueries({ queryKey: ['nota'] });
+      queryClient.invalidateQueries({ queryKey: ['memo'] });
+      toast.success("Data deleted")
+    }
+  })
+  return {mutate,isPending}
+}
+
+export function useUpdateMemo(){
+  const queryClient = useQueryClient();
+  const {mutate,isPending} = useMutation({
+    mutationFn:async(data:IUpdate)=>{
+      const resp = await axios.put(`api/memo/${data.id}`,data)
+      if(resp.status!=200){
+        throw new Error("Can't update data, try again later.")
+      }
+    },
+    onError:(e)=>{
+      toast.error(e.message)
+    },
+    onSuccess:()=>{
+      queryClient.invalidateQueries({ queryKey: ['memo'] });
+      toast.success("Data updated")
+    }
+  })
+  return {mutate,isPending}
+}
+
+const BeliSchema = z.object({
+  id:z.string(),
+  judul_beli:z.string(),
+  link_beli:z.string().nullable(),
+  no:z.number(),
+  no_beli:z.string(),
+  penulis_beli:z.string(),
+  tanggal_buat:z.string(),
+})
+
+export type IBeli = z.infer<typeof BeliSchema>;
+
+const BeliRespSchema = z.object({data:z.array(BeliSchema)})
+
+export function useGetPembelian(){
+  const {data,isLoading,isError} =  useQuery({
+    queryKey:["pembelian"],
+    queryFn:async()=>{
+      const resp = await axios.get('api/beli')
+      return resp.data
+    }
+  })
+  
+  const parseResult = BeliRespSchema.safeParse(data);
+  if(isError || !parseResult.success){
+    toast.error("Can't load data, please try again later")
+  }
+
+  
+  return {
+    data: parseResult.data?.data,
+    isLoading,
+    isError
+  };
+
+}
+
+export function useDelPembelian(){
+  const queryClient = useQueryClient();
+  const {mutate,isPending} = useMutation({
+    mutationFn:async(id:string)=>{
+      const resp = await axios.delete(`api/beli/${id}`)
+      if(resp.status!=200){
+        throw new Error("Can't delete data, try again later")
+      }
+    },
+    onError:(e)=>{
+      toast.error(e.message)
+    },
+    onSuccess:()=>{
+      queryClient.invalidateQueries({ queryKey: ['pembelian'] });
+      toast.success("Data deleted")
+    }
+  })
+  return {mutate,isPending}
+}
+
+
+export function useUpdatePembelian(){
+  const queryClient = useQueryClient();
+  const {mutate,isPending} = useMutation({
+    mutationFn:async(data:IUpdate)=>{
+      const resp = await axios.put(`api/beli/${data.id}`,data)
+      if(resp.status!=200){
+        throw new Error("Can't update data, try again later.")
+      }
+    },
+    onError:(e)=>{
+      toast.error(e.message)
+    },
+    onSuccess:()=>{
+      queryClient.invalidateQueries({ queryKey: ['pembelian'] });
+      toast.success("Data updated")
+    }
+  })
+  return {mutate,isPending}
+}
+
+
+
+const BersamaSchema = z.object({
+  id:z.string(),
+  judul:z.string(),
+  link:z.string().nullable(),
+  no:z.number(),
+  no_bersama:z.string(),
+  penulis:z.string(),
+  tanggal_buat:z.string(),
+})
+
+export type IBersama = z.infer<typeof BersamaSchema>;
+
+const BersamaRespSchema = z.object({data:z.array(BersamaSchema)})
+
+export function useGetBersama(){
+  const {data,isLoading,isError} =  useQuery({
+    queryKey:["bersama"],
+    queryFn:async()=>{
+      const resp = await axios.get('api/bersama')
+      return resp.data
+    }
+  })
+  
+  const parseResult = BersamaRespSchema.safeParse(data);
+  console.log(parseResult)
+  if(isError || !parseResult.success){
+    toast.error("Can't load data, please try again later")
+  }
+
+  
+  return {
+    data: parseResult.data?.data,
+    isLoading,
+    isError
+  };
+
+}
+
+export function useDelBersama(){
+  const queryClient = useQueryClient();
+  const {mutate,isPending} = useMutation({
+    mutationFn:async(id:string)=>{
+      const resp = await axios.delete(`api/bersama/${id}`)
+      if(resp.status!=200){
+        throw new Error("Can't delete data, try again later")
+      }
+    },
+    onError:(e)=>{
+      toast.error(e.message)
+    },
+    onSuccess:()=>{
+      queryClient.invalidateQueries({ queryKey: ['bersama'] });
       toast.success("Data deleted")
     }
   })
