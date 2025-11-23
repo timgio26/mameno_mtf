@@ -9,6 +9,7 @@ import { NewForm } from "../components/NewForm";
 export function Base() {
   const year = new Date().getFullYear();
   const [showModal,setShowModal] = useState<boolean>(false)
+  
 
   return (
     <div className="min-h-screen flex from-slate-50 to-slate-100 text-gray-800 font-sans">

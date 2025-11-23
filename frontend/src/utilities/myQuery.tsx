@@ -4,6 +4,7 @@ import axios from "axios";
 import { useNavigate } from "react-router";
 import { z } from "zod";
 import { getCurrentUser } from "./myFunction";
+import { useEffect } from "react";
 
 type SignupDto = {
   username: string;
@@ -74,9 +75,13 @@ type IAddData = {
 
 const AddDataRespSchema = z.object({
   // id:z.string(),
-  no_nota:z.string()
+  no_doc:z.string(),
+  pic:z.string(),
+  judul:z.string()
 
 })
+
+export type IAddDataResp = z.infer<typeof AddDataRespSchema>;
 
 export function useAddData(type:string|undefined){
   const queryClient = useQueryClient();
@@ -97,9 +102,11 @@ export function useAddData(type:string|undefined){
       }else{
         throw new Error("type unrecognized")
       }
+
       const reqBody = {
         judul : data.judul,
-        user_id : decoded.sub
+        user_id : decoded.sub,
+        divisi : data.divisi
       }
       const resp = await axios.post(url,reqBody)
       const parseResult = AddDataRespSchema.safeParse(resp.data)
@@ -128,26 +135,35 @@ const NotaSchema = z.object({
 
 export type INota = z.infer<typeof NotaSchema>;
 
-const NotaRespSchema = z.object({data:z.array(NotaSchema)})
+const NotaRespSchema = z.object({
+  data:z.array(NotaSchema),
+  page:z.number(),
+  total_pages:z.number()
+})
 
-export function useGetNota(){
+export function useGetNota(page:number,search:string|undefined){
   const {data,isLoading,isError} =  useQuery({
-    queryKey:["nota"],
+    queryKey:["nota",page,search],
     queryFn:async()=>{
-      const resp = await axios.get('api/nota')
+      const resp = await axios.get(`api/nota?page=${page}&search=${search}`)
       return resp.data
     },
     retry:false
   })
 
-  if(isError){
-    toast.error("Can't load data, please try again later")
-  }
-
   const parseResult = NotaRespSchema.safeParse(data);
+
+    useEffect(()=>{
+    if(!isError){
+      return;
+    }
+    if(isError||!parseResult.success){
+      toast.error("Can't load data, please try again later 2")
+    }
+  },[isError,parseResult.success])
   
   return {
-    data: parseResult.data?.data,
+    data: parseResult.data,
     isLoading,
     isError
   };
@@ -213,25 +229,34 @@ const MemoSchema = z.object({
 
 export type IMemo = z.infer<typeof MemoSchema>;
 
-const MemoRespSchema = z.object({data:z.array(MemoSchema)})
+const MemoRespSchema = z.object({data:z.array(MemoSchema),
+  page:z.number(),
+  total_pages:z.number(),
+})
 
-export function useGetMemo(){
+export function useGetMemo(page:number,search:string|undefined){
   const {data,isLoading,isError} =  useQuery({
-    queryKey:["memo"],
+    queryKey:["memo",page,search],
     queryFn:async()=>{
-      const resp = await axios.get('api/memo')
+      const resp = await axios.get(`api/memo?page=${page}&search=${search}`)
       return resp.data
     }
   })
 
-  if(isError){
-    toast.error("Can't load data, please try again later")
-  }
   
   const parseResult = MemoRespSchema.safeParse(data);
+
+    useEffect(()=>{
+    if(!isError){
+      return;
+    }
+    if(isError||!parseResult.success){
+      toast.error("Can't load data, please try again later 2")
+    }
+  },[isError,parseResult.success])
   
   return {
-    data: parseResult.data?.data,
+    data: parseResult.data,
     isLoading,
     isError
   };
@@ -290,25 +315,33 @@ const BeliSchema = z.object({
 
 export type IBeli = z.infer<typeof BeliSchema>;
 
-const BeliRespSchema = z.object({data:z.array(BeliSchema)})
+const BeliRespSchema = z.object({data:z.array(BeliSchema),
+  page:z.number(),
+  total_pages:z.number()
+})
 
-export function useGetPembelian(){
+export function useGetPembelian(page:number,search:string|undefined){
   const {data,isLoading,isError} =  useQuery({
-    queryKey:["pembelian"],
+    queryKey:["pembelian",page,search],
     queryFn:async()=>{
-      const resp = await axios.get('api/beli')
+      const resp = await axios.get(`api/beli?page=${page}&search=${search}`)
       return resp.data
-    }
-  })
-  
-  const parseResult = BeliRespSchema.safeParse(data);
-  if(isError || !parseResult.success){
-    toast.error("Can't load data, please try again later")
-  }
+    },
 
-  
+  })
+
+  const parseResult = BeliRespSchema.safeParse(data);
+  useEffect(()=>{
+    if(!isError){
+      return;
+    }
+    if(isError||!parseResult.success){
+      toast.error("Can't load data, please try again later 2")
+    }
+  },[isError,parseResult.success])
+
   return {
-    data: parseResult.data?.data,
+    data: parseResult.data,
     isLoading,
     isError
   };
@@ -370,26 +403,32 @@ const BersamaSchema = z.object({
 
 export type IBersama = z.infer<typeof BersamaSchema>;
 
-const BersamaRespSchema = z.object({data:z.array(BersamaSchema)})
+const BersamaRespSchema = z.object({data:z.array(BersamaSchema),
+  page:z.number(),
+  total_pages:z.number()
+})
 
-export function useGetBersama(){
+export function useGetBersama(page:number,search:string|undefined){
   const {data,isLoading,isError} =  useQuery({
-    queryKey:["bersama"],
+    queryKey:["bersama",page,search],
     queryFn:async()=>{
-      const resp = await axios.get('api/bersama')
+      const resp = await axios.get(`api/bersama?page=${page}&search=${search}`)
       return resp.data
     }
   })
   
   const parseResult = BersamaRespSchema.safeParse(data);
-  console.log(parseResult)
-  if(isError || !parseResult.success){
-    toast.error("Can't load data, please try again later")
-  }
-
-  
+  useEffect(()=>{
+    if(!isError){
+      return;
+    }
+    if(isError||!parseResult.success){
+      toast.error("Can't load data, please try again later 2")
+    }
+  },[isError,parseResult.success])
+  // console.log(parseResult.data?.data)
   return {
-    data: parseResult.data?.data,
+    data: parseResult.data,
     isLoading,
     isError
   };
@@ -411,6 +450,26 @@ export function useDelBersama(){
     onSuccess:()=>{
       queryClient.invalidateQueries({ queryKey: ['bersama'] });
       toast.success("Data deleted")
+    }
+  })
+  return {mutate,isPending}
+}
+
+export function useUpdateBersama(){
+  const queryClient = useQueryClient();
+  const {mutate,isPending} = useMutation({
+    mutationFn:async(data:IUpdate)=>{
+      const resp = await axios.put(`api/bersama/${data.id}`,data)
+      if(resp.status!=200){
+        throw new Error("Can't update data, try again later.")
+      }
+    },
+    onError:(e)=>{
+      toast.error(e.message)
+    },
+    onSuccess:()=>{
+      queryClient.invalidateQueries({ queryKey: ['bersama'] });
+      toast.success("Data updated")
     }
   })
   return {mutate,isPending}

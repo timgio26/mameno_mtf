@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PopupModal } from "../components/PopUpModal";
 import { type INota, useDelNota, useGetNota } from "../utilities/myQuery";
 import {
@@ -10,13 +10,27 @@ import {
 import { EditForm } from "../components/EditForm";
 import { Error } from "../components/Error";
 import { Loading } from "../components/Loading";
+import { Pagination } from "../components/Pagination";
 
 export function Nota() {
-  const { data, isLoading, isError } = useGetNota();
+  const [page,setPage] = useState<number>(1)
+  const [search, setSearch] = useState<string>();
+  const [searchInput, setSearchInput] = useState<string>("");
+  const { data, isLoading, isError } = useGetNota(page,search);
   const {mutate:deleteNota, isPending:isDeleting} = useDelNota()
   const [selectedData,setSelectedData] = useState<INota>()
   const [showDelPopup, setShowDelPopup] = useState<boolean>(false);
   const [showEditPopup, setShowEditPopup] = useState<boolean>(false);
+
+  // const {data,total_page} = allNota
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchInput.length == 0 || searchInput.length >= 3) {
+        setSearch(searchInput);
+      }
+    }, 500); // run this code after 500 ms
+    return () => clearTimeout(timer); // cancel previous timer
+  }, [searchInput]);
   
 
   function handleDeleteNota(){
@@ -55,13 +69,13 @@ export function Nota() {
             type="text"
             placeholder="Search Nota..."
             className="bg-transparent outline-none text-sm text-gray-700 w-40 sm:w-64"
-            // value={searchInput}
-            // onChange={(e) => setSearchInput(e.target.value)}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
           />
         </div>
       </div>
 
-      {data && data.length>0 ?(
+      {data && data.data.length>0 ?(
       <div>
         <table className="min-w-full divide-y divide-slate-200 rounded-xl overflow-hidden shadow-lg bg-white">
           <thead className="bg-slate-100 text-slate-700 text-sm font-semibold tracking-wide">
@@ -74,14 +88,14 @@ export function Nota() {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 text-sm text-slate-600">
-            {data.map((each, idx) => (
+            {data.data.map((each, idx) => (
               <tr key={idx} className="hover:bg-slate-50 transition">
                 <td className="px-6 py-4 font-medium text-slate-800">
                   {each.no_nota}
                 </td>
                 <td className="px-6 py-4">{each.judul_nota}</td>
                 <td className="px-6 py-4">{each.penulis_nota}</td>
-                <td className="px-6 py-4">{each.tanggal_buat}</td>
+                <td className="px-6 py-4">{each.tanggal_buat.split("00")[0].trim()}</td>
                 <td className="px-6 py-4 flex justify-center gap-3 text-slate-500">
                   {/* <button className="hover:text-indigo-600 transition">
                     <IoIosEye size={18} />
@@ -105,6 +119,7 @@ export function Nota() {
             ))}
           </tbody>
         </table>
+        <Pagination onNext={()=>{setPage((curPage)=>curPage+1)}} onPrev={()=>{setPage((curPage)=>curPage-1)}} page={page} total_page={data.total_pages}/>
       </div>
       ):(
         <div className="flex flex-col items-center justify-center text-center text-gray-500 py-12">

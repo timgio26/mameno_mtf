@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PopupModal } from "../components/PopUpModal";
 import { useDelMemo, useGetMemo, type IMemo } from "../utilities/myQuery";
 import {
@@ -10,13 +10,26 @@ import {
 import { Loading } from "../components/Loading";
 import { Error } from "../components/Error";
 import { EditFormMemo } from "../components/EditFormMemo";
+import { Pagination } from "../components/Pagination";
 
 export function Memo() {
-  const { data, isLoading, isError } = useGetMemo();
+  const [page,setPage] = useState<number>(1)
+  const [search, setSearch] = useState<string>();
+  const [searchInput, setSearchInput] = useState<string>("");
+  const { data, isLoading, isError } = useGetMemo(page,search);
   const [showDelPopup, setShowDelPopup] = useState<boolean>(false);
   const [selectedData, setSelectedData] = useState<IMemo>();
   const { mutate: delete_memo, isPending: is_deleting } = useDelMemo();
   const [showEditPopup, setShowEditPopup] = useState<boolean>(false);
+
+    useEffect(() => {
+      const timer = setTimeout(() => {
+        if (searchInput.length == 0 || searchInput.length >= 3) {
+          setSearch(searchInput);
+        }
+      }, 500); // run this code after 500 ms
+      return () => clearTimeout(timer); // cancel previous timer
+    }, [searchInput]);
 
   function handleDeleteMemo() {
     if (!selectedData) return;
@@ -50,12 +63,12 @@ export function Memo() {
             type="text"
             placeholder="Search Memo..."
             className="bg-transparent outline-none text-sm text-gray-700 w-40 sm:w-64"
-            // value={searchInput}
-            // onChange={(e) => setSearchInput(e.target.value)}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
           />
         </div>
       </div>
-      {data && data.length > 0 ? (
+      {data && data.data.length > 0 ? (
         <div>
           <table className="min-w-full divide-y divide-slate-200 rounded-xl overflow-hidden shadow-lg bg-white">
             <thead className="bg-slate-100 text-slate-700 text-sm font-semibold tracking-wide">
@@ -68,14 +81,14 @@ export function Memo() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-sm text-slate-600">
-              {data.map((each, idx) => (
+              {data.data.map((each, idx) => (
                 <tr key={idx} className="hover:bg-slate-50 transition">
                   <td className="px-6 py-4 font-medium text-slate-800">
                     {each.no_memo}
                   </td>
                   <td className="px-6 py-4">{each.judul_memo}</td>
                   <td className="px-6 py-4">{each.penulis_memo}</td>
-                  <td className="px-6 py-4">{each.tanggal_buat}</td>
+                  <td className="px-6 py-4">{each.tanggal_buat.split("00")[0].trim()}</td>
                   <td className="px-6 py-4 flex justify-center gap-3 text-slate-500">
                     {/* <button className="hover:text-indigo-600 transition">
                     <IoIosEye size={18} />
@@ -103,6 +116,7 @@ export function Memo() {
               ))}
             </tbody>
           </table>
+          <Pagination onNext={()=>{setPage((curPage)=>curPage+1)}} onPrev={()=>{setPage((curPage)=>curPage-1)}} page={page} total_page={data.total_pages}/>
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center text-center text-gray-500 py-12">

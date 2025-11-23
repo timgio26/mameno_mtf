@@ -1,15 +1,11 @@
-from flask import Blueprint,jsonify,request,send_file
-from mameno.extension import db,TodayMonthToRoman,GenerateDocNumber
+from flask import Blueprint,jsonify,request
+from mameno.extension import db,GenerateDocNumber
 from mameno.models.models import *
 from werkzeug.security import generate_password_hash,check_password_hash
-from flask_jwt_extended import create_access_token,jwt_required,get_jwt_identity
+from flask_jwt_extended import create_access_token,jwt_required
 from uuid import UUID
-from sqlalchemy import or_,asc
-from sqlalchemy.orm import joinedload
-import pandas as pd
-from io import BytesIO
-from sqlalchemy import text
-from datetime import date,datetime
+from sqlalchemy import or_,desc
+from datetime import date
 
 
 main_bp = Blueprint('main', __name__)
@@ -21,6 +17,7 @@ def version():
 ################### CREATE
 
 @main_bp.post('/api/nota')
+@jwt_required()
 def create_nota():
     data = request.get_json()
     now = date.today()
@@ -41,10 +38,13 @@ def create_nota():
     return jsonify({
         "message": "Nota created successfully",
         "id": newnota.id,
-        "no_nota": no_nota
+        "no_doc": no_nota,
+        "pic":newnota.user.nama,
+        "judul":newnota.judul_nota
     }), 201
 
 @main_bp.post('/api/memo')
+@jwt_required()
 def create_memo():
     data = request.get_json()
     now = date.today()
@@ -65,10 +65,13 @@ def create_memo():
     return jsonify({
         "message": "Memo created successfully",
         "id": newmemo.id,
-        "no_memo": no_memo
+        "no_doc": no_memo,
+        "pic":newmemo.user.nama,
+        "judul":newmemo.judul_memo
     }), 201
 
 @main_bp.post('/api/beli')
+@jwt_required()
 def create_beli():
     data = request.get_json()
     now = date.today()
@@ -89,15 +92,19 @@ def create_beli():
     return jsonify({
         "message": "Form Pembelian created successfully",
         "id": newbeli.id,
-        "no_beli": no_beli
+        "no_doc": newbeli.no_beli,
+        "pic":newbeli.user.nama,
+        "judul":newbeli.judul_beli
     }), 201
 
 @main_bp.post('/api/bersama')
+@jwt_required()
 def create_bersama():
     data = request.get_json()
     now = date.today()
-    divlist = ['div1', 'div2', 'div3', 'div4', 'div5']
-    list_str = "-".join([data.get(x, "").upper().replace(" ", "") for x in divlist if data.get(x)])
+    print(data.get("divisi"))
+    # divlist = ['div1', 'div2', 'div3', 'div4', 'div5']
+    list_str = "-".join([str(div).upper() for div in data.get("divisi")])
     no, no_bersama = GenerateDocNumber(model=TblBersama, prefix=f"Nota Bersama-{list_str}")
 
     newdata = TblBersama(
@@ -115,74 +122,137 @@ def create_bersama():
     return jsonify({
         "message": "Nota Bersama created successfully",
         "id": newdata.id,
-        "no_bersama": no_bersama
+        "no_doc": newdata.no_bersama,
+        "pic":newdata.user.nama,
+        "judul":newdata.judul
     }), 201
 
 ################### READ
 
 @main_bp.get('/api/memo')
+@jwt_required()
 def get_memo_list():
-    # tahun = request.args.get('tahun', type=int)
-    judul = request.args.get('judul', '', type=str)
+    
+    page = int(request.args.get('page', 1))
+    per_page = int(request.args.get('per_page', 3))  # default 20 items per page
+    search = str(request.args.get('search'))
 
-    # Default to current year if no tahun provided
-    # if not tahun:
-    #     tahun = datetime.now().year
+    # Calculate offset
+    offset = (page - 1) * per_page
+    query = TblMemo.query.order_by(desc(TblMemo.no))
 
-    query = TblMemo.query.order_by(asc(TblMemo.no))#.filter_by(tahun_memo=tahun)
+    # Apply filtering only if search is provided
+    if len(search)>0:
+        query = query.filter(or_(
+            TblMemo.judul_memo.contains(f"%{search}%"),
+            TblMemo.no_memo.contains(f"%{search}%")
+        ))
 
-    if judul:
-        query = query.filter(TblMemo.judul_memo.contains(judul))
-
-    records = query.all()
+    total = query.count()
+    records = query.offset(offset).limit(per_page).all()
 
     return jsonify({
         # "tahun": tahun,
         # "judul_filter": judul,
-        "data": [r.to_dict() for r in records]
+        "data": [r.to_dict() for r in records],
+        "page": page,
+        # "per_page": per_page,
+        # "total": total,
+        "total_pages": (total + per_page - 1) // per_page
     }), 200
 
 @main_bp.get('/api/beli')
+@jwt_required()
 def get_beli_list():
-    records = TblBeli.query.all()
+    # records = TblBeli.query.all()
+    page = int(request.args.get('page', 1))
+    per_page = int(request.args.get('per_page', 3))  # default 20 items per page
+    search = str(request.args.get('search'))
+
+    # Calculate offset
+    offset = (page - 1) * per_page
+    query = TblBeli.query.order_by(desc(TblBeli.no))
+
+    # Apply filtering only if search is provided
+    if len(search)>0:
+        query = query.filter(or_(
+            TblBeli.judul_beli.contains(f"%{search}%"),
+            TblBeli.no_beli.contains(f"%{search}%")
+        )
+        )
+
+    total = query.count()
+    records = query.offset(offset).limit(per_page).all()
     return jsonify({
-        # "judul": "Form Pembelian",
-        "data": [r.to_dict() for r in records]
+        "data": [r.to_dict() for r in records],
+        "page": page,
+        "total_pages": (total + per_page - 1) // per_page
     }), 200
 
 @main_bp.get('/api/bersama')
+@jwt_required()
 def get_bersama_list():
-    records = TblBersama.query.all()
+    # records = TblBersama.query.all()
+    page = int(request.args.get('page', 1))
+    per_page = int(request.args.get('per_page', 3))  # default 20 items per page
+    search = str(request.args.get('search'))
+
+    # Calculate offset
+    offset = (page - 1) * per_page
+    query = TblBersama.query.order_by(desc(TblBersama.no))
+
+    # Apply filtering only if search is provided
+    if len(search)>0:
+        query = query.filter(or_(
+
+            TblBersama.judul.contains(f"%{search}%"),
+            TblBersama.no_bersama.contains(f"%{search}%")
+        )
+        )
+
+    total = query.count()
+    records = query.offset(offset).limit(per_page).all()
     return jsonify({
-        "judul": "Nota Bersama",
-        "data": [r.to_dict() for r in records]
+        "data": [r.to_dict() for r in records],
+        "page": page,
+        "total_pages": (total + per_page - 1) // per_page
     }), 200
 
 @main_bp.get('/api/nota')
+@jwt_required()
 def get_nota_list():
-    # tahun = request.args.get('tahun', type=int)
-    judul = request.args.get('judul', '', type=str)
+    page = int(request.args.get('page', 1))
+    per_page = int(request.args.get('per_page', 3))  # default 20 items per page
+    search = str(request.args.get('search'))
 
-    # # Default to current year if no tahun provided
-    # if not tahun:
-    #     tahun = datetime.now().year
+    # Calculate offset
+    offset = (page - 1) * per_page
+    query = TblNota.query.order_by(desc(TblNota.no))
 
-    query = TblNota.query.order_by(asc(TblNota.no))#.filter_by(tahun_nota=tahun)
+    # Apply filtering only if search is provided
+    if len(search)>0:
+        query = query.filter(or_(
+                TblNota.judul_nota.contains(f"%{search}%"),
+                TblNota.no_nota.contains(f"%{search}%")
+            ))
 
-    if judul:
-        query = query.filter(TblNota.judul_nota.contains(judul))
-
-    records = query.all()
+    total = query.count()
+    records = query.offset(offset).limit(per_page).all()
 
     return jsonify({
         # "tahun": tahun,
         # "judul_filter": judul,
-        "data": [r.to_dict() for r in records]
+        "data": [r.to_dict() for r in records],
+        "page": page,
+        # "per_page": per_page,
+        # "total": total,
+        "total_pages": (total + per_page - 1) // per_page
     }), 200
 
 ################### DELETE
 
 @main_bp.delete('/api/nota/<id>')
+@jwt_required()
 def delete_nota(id):
     print(id)
     nota = TblNota.query.get_or_404(UUID(id))
@@ -194,6 +264,7 @@ def delete_nota(id):
     }), 200
 
 @main_bp.delete('/api/memo/<id>')
+@jwt_required()
 def delete_memo(id):
     memo = TblMemo.query.get_or_404(UUID(id))
 
@@ -206,6 +277,7 @@ def delete_memo(id):
     }), 200
 
 @main_bp.delete('/api/beli/<id>')
+@jwt_required()
 def delete_beli(id):
     item = TblBeli.query.get_or_404(UUID(id))
     db.session.delete(item)
@@ -216,6 +288,7 @@ def delete_beli(id):
     }), 200
 
 @main_bp.delete('/api/bersama/<id>')
+@jwt_required()
 def delete_bersama(id):
     item = TblBersama.query.get_or_404(UUID(id))
     db.session.delete(item)
@@ -228,6 +301,7 @@ def delete_bersama(id):
 ################### UPDATE
 
 @main_bp.put('/api/nota/<id>')
+@jwt_required()
 def update_nota(id):
     upnota = TblNota.query.get_or_404(UUID(id))
     data = request.get_json()
@@ -247,6 +321,7 @@ def update_nota(id):
     }), 200
 
 @main_bp.put('/api/memo/<id>')
+@jwt_required()
 def update_memo(id):
     upmemo = TblMemo.query.get_or_404(UUID(id))
     data = request.get_json()
@@ -265,6 +340,7 @@ def update_memo(id):
     }), 200
 
 @main_bp.put('/api/beli/<id>')
+@jwt_required()
 def update_beli(id):
     upmemo = TblBeli.query.get_or_404(UUID(id))
     data = request.get_json()
@@ -284,24 +360,26 @@ def update_beli(id):
     }), 200
 
 @main_bp.put('/api/bersama/<id>')
+@jwt_required()
 def update_bersama(id):
     data = request.get_json()
-    now = date.today()
+    # now = date.today()
 
-    bersama = TblBersama.query.get_or_404(id)
+    bersama = TblBersama.query.get_or_404(UUID(id))
 
     # Update fields
-    bersama.penulis = data.get("penulis", bersama.penulis)
+    # bersama.penulis = data.get("penulis", bersama.penulis)
     bersama.judul = data.get("judul", bersama.judul)
-    bersama.tanggal_buat = now
-    bersama.tahun = now.year
+    bersama.link = data.get("url", bersama.link)
+    # bersama.tanggal_buat = now
+    # bersama.tahun = now.year
 
-    # Optional: regenerate no_bersama if divisions are updated
-    divlist = ['div1', 'div2', 'div3', 'div4', 'div5']
-    list_str = "-".join([data.get(x, "").upper().replace(" ", "") for x in divlist if data.get(x)])
-    if list_str:
-        _, no_bersama = GenerateDocNumber(model=TblBersama, prefix=f"Nota Bersama-{list_str}")
-        bersama.no_bersama = no_bersama
+    # # Optional: regenerate no_bersama if divisions are updated
+    # divlist = ['div1', 'div2', 'div3', 'div4', 'div5']
+    # list_str = "-".join([data.get(x, "").upper().replace(" ", "") for x in divlist if data.get(x)])
+    # if list_str:
+    #     _, no_bersama = GenerateDocNumber(model=TblBersama, prefix=f"Nota Bersama-{list_str}")
+    #     bersama.no_bersama = no_bersama
 
     db.session.commit()
 
