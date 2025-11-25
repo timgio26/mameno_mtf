@@ -13,7 +13,6 @@ export function NewForm({setShowModal}:NewFormProp) {
   const {data,mutate,isPending} = useAddData(kategori)
   const [result,setResult] = useState<IAddDataResp|undefined>()
 
-  console.log(data)
   useEffect(()=>{
     setResult(data)
   },[data])
@@ -30,7 +29,9 @@ export function NewForm({setShowModal}:NewFormProp) {
   }
 
   function submitForm(){
+    // console.log("submit")
     if(!judul||!kategori)return;
+    // console.log("mutate")
     mutate({judul,divisi:divisiList})
   }
 

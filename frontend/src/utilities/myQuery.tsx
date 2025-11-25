@@ -1,10 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
-import axios from "axios"; 
 import { useNavigate } from "react-router";
 import { z } from "zod";
-import { getCurrentUser } from "./myFunction";
 import { useEffect } from "react";
+import Cookies from 'js-cookie'
+import {api, get_today_date } from "./myFunction"
 
 type SignupDto = {
   username: string;
@@ -18,14 +18,19 @@ type SigninDto = {
 };
 
 const SigninRespSchema = z.object({
-  token : z.string()
+  message : z.string(),
+  user:z.object({
+    nama:z.string(),
+    username:z.string(),
+    user_id:z.string()
+  })
 })
 
 
 export function useSignUp(){
   const {mutate,isError,isPending} = useMutation({
     mutationFn:async(data:SignupDto)=>{
-      const resp = await axios.post('api/signup',data)
+      const resp = await api.post('api/signup',data)
       if(resp.status!=201){
         throw new Error("signup error")
       }
@@ -45,10 +50,11 @@ export function useSignIn(){
   const navigate = useNavigate()
   const {mutate,isError,isPending} = useMutation({
     mutationFn:async(data:SigninDto)=>{
-      const resp = await axios.post('api/login',data)
+      const resp = await api.post('api/login',data)
       if(resp.status!=200){
         throw new Error("Signin error")
       }
+
       const parsed = SigninRespSchema.safeParse(resp.data)
       if(!parsed.success){
         throw new Error("signup error")
@@ -60,11 +66,59 @@ export function useSignIn(){
     },
     onSuccess:(fromMutation)=>{
       toast.success("Login Success")
-      sessionStorage.setItem('token',fromMutation.token)
+      sessionStorage.setItem('user_id',fromMutation.user.user_id)
       navigate("/")
     }
   })
   return {mutate,isError,isPending}
+}
+
+export function useLogOut(){
+  const nav = useNavigate()
+  const {mutate,isPending} = useMutation({
+    mutationFn:async()=>{
+      const resp = await api.post('api/logout')
+      if(resp.status!=200){
+        throw new Error("can't logout")
+      }
+    },
+    onError:()=>{
+      toast.error("Can't logout try again later")
+    },
+    onSuccess:()=>{
+      sessionStorage.clear()
+      toast.success("Success Log out")
+      nav('/auth')
+    }
+  })
+  return {mutate,isPending}
+}
+
+const UserCheckResp = z.object({
+  authenticated:z.boolean(),
+  user_id:z.string(),
+  role:z.string(),
+})
+
+export function useUserCheck(){
+  const {data,isLoading} = useQuery({
+    queryKey:["userCheck"],
+    queryFn:async()=>{
+      const resp = await api.get('/api/me',{withCredentials:true})
+      
+      if(resp.status!=200){
+        throw new Error("user not authenticated")
+      }
+      const parseResult = UserCheckResp.safeParse(resp.data)
+      if(!parseResult.success){
+        throw new Error("user not authenticated")
+      }
+      return parseResult.data
+    },
+    retry:false,
+    staleTime:5 * 60 * 1000
+  })
+  return {data,isLoading}
 }
 
 type IAddData = {
@@ -87,8 +141,8 @@ export function useAddData(type:string|undefined){
   const queryClient = useQueryClient();
   const {data,mutate,isPending} = useMutation({
     mutationFn:async(data:IAddData)=>{
-
-      const {token,decoded} = getCurrentUser()
+      const csrfToken = Cookies.get("csrf_access_token");
+      const user_id = sessionStorage.getItem("user_id");
 
       let url
       if(type == "nota"){
@@ -105,10 +159,10 @@ export function useAddData(type:string|undefined){
 
       const reqBody = {
         judul : data.judul,
-        user_id : decoded.sub,
+        user_id : user_id,
         divisi : data.divisi
       }
-      const resp = await axios.post(url,reqBody)
+      const resp = await api.post(url,reqBody,{withCredentials:true,headers: { "X-CSRF-TOKEN": csrfToken }})
       const parseResult = AddDataRespSchema.safeParse(resp.data)
       return parseResult.data
     },
@@ -141,11 +195,11 @@ const NotaRespSchema = z.object({
   total_pages:z.number()
 })
 
-export function useGetNota(page:number,search:string|undefined){
+export function useGetNota(page:number,search:string){
   const {data,isLoading,isError} =  useQuery({
     queryKey:["nota",page,search],
     queryFn:async()=>{
-      const resp = await axios.get(`api/nota?page=${page}&search=${search}`)
+      const resp = await api.get(`api/nota?page=${page}&search=${search}`,{withCredentials:true})
       return resp.data
     },
     retry:false
@@ -172,10 +226,11 @@ export function useGetNota(page:number,search:string|undefined){
 
 
 export function useDelNota(){
+  const csrfToken = Cookies.get("csrf_access_token");
   const queryClient = useQueryClient();
   const {mutate,isPending} = useMutation({
     mutationFn:async(id:string)=>{
-      const resp = await axios.delete(`api/nota/${id}`)
+      const resp = await api.delete(`api/nota/${id}`,{withCredentials:true,headers: { "X-CSRF-TOKEN": csrfToken }})
       if(resp.status!=200){
         throw new Error("Can't delete data, try again later")
       }
@@ -198,10 +253,11 @@ type IUpdate = {
 }
 
 export function useUpdateNota(){
+  const csrfToken = Cookies.get("csrf_access_token");
   const queryClient = useQueryClient();
   const {mutate,isPending} = useMutation({
     mutationFn:async(data:IUpdate)=>{
-      const resp = await axios.put(`api/nota/${data.id}`,data)
+      const resp = await api.put(`api/nota/${data.id}`,data,{withCredentials:true,headers: { "X-CSRF-TOKEN": csrfToken }})
       if(resp.status!=200){
         throw new Error("Can't update data, try again later.")
       }
@@ -234,11 +290,11 @@ const MemoRespSchema = z.object({data:z.array(MemoSchema),
   total_pages:z.number(),
 })
 
-export function useGetMemo(page:number,search:string|undefined){
+export function useGetMemo(page:number,search:string){
   const {data,isLoading,isError} =  useQuery({
     queryKey:["memo",page,search],
     queryFn:async()=>{
-      const resp = await axios.get(`api/memo?page=${page}&search=${search}`)
+      const resp = await api.get(`api/memo?page=${page}&search=${search}`,{withCredentials:true})
       return resp.data
     }
   })
@@ -265,9 +321,10 @@ export function useGetMemo(page:number,search:string|undefined){
 
 export function useDelMemo(){
   const queryClient = useQueryClient();
+  const csrfToken = Cookies.get("csrf_access_token");
   const {mutate,isPending} = useMutation({
     mutationFn:async(id:string)=>{
-      const resp = await axios.delete(`api/memo/${id}`)
+      const resp = await api.delete(`api/memo/${id}`,{withCredentials:true,headers: { "X-CSRF-TOKEN": csrfToken }})
       if(resp.status!=200){
         throw new Error("Can't delete data, try again later")
       }
@@ -285,9 +342,10 @@ export function useDelMemo(){
 
 export function useUpdateMemo(){
   const queryClient = useQueryClient();
+  const csrfToken = Cookies.get("csrf_access_token");
   const {mutate,isPending} = useMutation({
     mutationFn:async(data:IUpdate)=>{
-      const resp = await axios.put(`api/memo/${data.id}`,data)
+      const resp = await api.put(`api/memo/${data.id}`,data,{withCredentials:true,headers: { "X-CSRF-TOKEN": csrfToken }})
       if(resp.status!=200){
         throw new Error("Can't update data, try again later.")
       }
@@ -320,11 +378,11 @@ const BeliRespSchema = z.object({data:z.array(BeliSchema),
   total_pages:z.number()
 })
 
-export function useGetPembelian(page:number,search:string|undefined){
+export function useGetPembelian(page:number,search:string){
   const {data,isLoading,isError} =  useQuery({
     queryKey:["pembelian",page,search],
     queryFn:async()=>{
-      const resp = await axios.get(`api/beli?page=${page}&search=${search}`)
+      const resp = await api.get(`api/beli?page=${page}&search=${search}`,{withCredentials:true})
       return resp.data
     },
 
@@ -350,9 +408,10 @@ export function useGetPembelian(page:number,search:string|undefined){
 
 export function useDelPembelian(){
   const queryClient = useQueryClient();
+  const csrfToken = Cookies.get("csrf_access_token");
   const {mutate,isPending} = useMutation({
     mutationFn:async(id:string)=>{
-      const resp = await axios.delete(`api/beli/${id}`)
+      const resp = await api.delete(`api/beli/${id}`,{withCredentials:true,headers: { "X-CSRF-TOKEN": csrfToken }})
       if(resp.status!=200){
         throw new Error("Can't delete data, try again later")
       }
@@ -371,9 +430,10 @@ export function useDelPembelian(){
 
 export function useUpdatePembelian(){
   const queryClient = useQueryClient();
+  const csrfToken = Cookies.get("csrf_access_token");
   const {mutate,isPending} = useMutation({
     mutationFn:async(data:IUpdate)=>{
-      const resp = await axios.put(`api/beli/${data.id}`,data)
+      const resp = await api.put(`api/beli/${data.id}`,data,{withCredentials:true,headers: { "X-CSRF-TOKEN": csrfToken }})
       if(resp.status!=200){
         throw new Error("Can't update data, try again later.")
       }
@@ -408,11 +468,11 @@ const BersamaRespSchema = z.object({data:z.array(BersamaSchema),
   total_pages:z.number()
 })
 
-export function useGetBersama(page:number,search:string|undefined){
+export function useGetBersama(page:number,search:string){
   const {data,isLoading,isError} =  useQuery({
     queryKey:["bersama",page,search],
     queryFn:async()=>{
-      const resp = await axios.get(`api/bersama?page=${page}&search=${search}`)
+      const resp = await api.get(`api/bersama?page=${page}&search=${search}`,{withCredentials:true})
       return resp.data
     }
   })
@@ -437,9 +497,10 @@ export function useGetBersama(page:number,search:string|undefined){
 
 export function useDelBersama(){
   const queryClient = useQueryClient();
+  const csrfToken = Cookies.get("csrf_access_token");
   const {mutate,isPending} = useMutation({
     mutationFn:async(id:string)=>{
-      const resp = await axios.delete(`api/bersama/${id}`)
+      const resp = await api.delete(`api/bersama/${id}`,{withCredentials:true,headers: { "X-CSRF-TOKEN": csrfToken }})
       if(resp.status!=200){
         throw new Error("Can't delete data, try again later")
       }
@@ -457,9 +518,10 @@ export function useDelBersama(){
 
 export function useUpdateBersama(){
   const queryClient = useQueryClient();
+  const csrfToken = Cookies.get("csrf_access_token");
   const {mutate,isPending} = useMutation({
     mutationFn:async(data:IUpdate)=>{
-      const resp = await axios.put(`api/bersama/${data.id}`,data)
+      const resp = await api.put(`api/bersama/${data.id}`,data,{withCredentials:true,headers: { "X-CSRF-TOKEN": csrfToken }})
       if(resp.status!=200){
         throw new Error("Can't update data, try again later.")
       }
@@ -473,4 +535,52 @@ export function useUpdateBersama(){
     }
   })
   return {mutate,isPending}
+}
+
+export async function downloadData(){
+  try {
+    // const token = sessionStorage.getItem("token");
+    const response = await api.get('api/download',{withCredentials:true,responseType:"blob"});
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `Mameno ${get_today_date()}.xlsx`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    toast.success("File downloaded");
+  } catch (error) {
+    toast.error("Can't download")
+  }
+};
+const UserSchema = z.object({
+  id:z.string(),
+  nama:z.string(),
+  role:z.string(),
+  username:z.string()
+})
+const AllUserRespSchema = z.object({
+  data:z.array(UserSchema)
+})
+
+export function useGetUser(){
+  const {data,isError,isLoading} = useQuery({
+    queryKey:['user'],
+    queryFn:async()=>{
+      const resp = await api.get('/api/user',{withCredentials:true})
+      // console.log(resp.data)
+      return resp.data
+    }
+  })
+
+  const parseResult = AllUserRespSchema.safeParse(data)
+  // console.log(parseResult)
+
+  useEffect(()=>{
+    if(isError||!parseResult.success){
+      toast.error("Can't load data, please try again later 2")
+    }
+  },[isError,parseResult.success])
+
+  return {data:parseResult.data,isError,isLoading}
 }

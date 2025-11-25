@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import {  useState } from "react";
 import { PopupModal } from "../components/PopUpModal";
-import { useDelMemo, useGetMemo, type IMemo } from "../utilities/myQuery";
+import { useDelMemo, useGetMemo, useUserCheck, type IMemo } from "../utilities/myQuery";
 import {
   IoIosTrash,
   // IoIosEye,
@@ -11,25 +11,20 @@ import { Loading } from "../components/Loading";
 import { Error } from "../components/Error";
 import { EditFormMemo } from "../components/EditFormMemo";
 import { Pagination } from "../components/Pagination";
+import { InputWithLimiter } from "../components/InputWithLimiter";
 
 export function Memo() {
   const [page,setPage] = useState<number>(1)
-  const [search, setSearch] = useState<string>();
-  const [searchInput, setSearchInput] = useState<string>("");
+  const [search, setSearch] = useState<string>("");
+  // const [searchInput, setSearchInput] = useState<string>("");
   const { data, isLoading, isError } = useGetMemo(page,search);
   const [showDelPopup, setShowDelPopup] = useState<boolean>(false);
   const [selectedData, setSelectedData] = useState<IMemo>();
   const { mutate: delete_memo, isPending: is_deleting } = useDelMemo();
   const [showEditPopup, setShowEditPopup] = useState<boolean>(false);
+  const { data:userData } = useUserCheck();
 
-    useEffect(() => {
-      const timer = setTimeout(() => {
-        if (searchInput.length == 0 || searchInput.length >= 3) {
-          setSearch(searchInput);
-        }
-      }, 500); // run this code after 500 ms
-      return () => clearTimeout(timer); // cancel previous timer
-    }, [searchInput]);
+
 
   function handleDeleteMemo() {
     if (!selectedData) return;
@@ -45,7 +40,7 @@ export function Memo() {
     return <Loading />;
   }
 
-  if (isError) {
+  if (isError||!userData) {
     return <Error />;
   }
 
@@ -58,13 +53,13 @@ export function Memo() {
         {/* Search Bar */}
 
         <div className="flex items-center gap-2 bg-gray-100 rounded-full px-4 py-2 border border-gray-300 focus-within:ring-2 focus-within:ring-blue-500 transition">
-          {/* <CiSearch className="text-gray-500" size={20} /> */}
-          <input
-            type="text"
-            placeholder="Search Memo..."
-            className="bg-transparent outline-none text-sm text-gray-700 w-40 sm:w-64"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
+
+          <InputWithLimiter
+            placeholder="Search Nota..."
+            functionAfterDelay={(val:string) => {
+              setPage(1);
+              setSearch(val);
+            }}
           />
         </div>
       </div>
@@ -77,7 +72,9 @@ export function Memo() {
                 <th className="px-6 py-4 text-left">Judul</th>
                 <th className="px-6 py-4 text-left">PIC</th>
                 <th className="px-6 py-4 text-left">Tanggal</th>
+                {userData.role=='admin'&&
                 <th className="px-6 py-4 text-center">Actions</th>
+                }
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-sm text-slate-600">
@@ -89,6 +86,7 @@ export function Memo() {
                   <td className="px-6 py-4">{each.judul_memo}</td>
                   <td className="px-6 py-4">{each.penulis_memo}</td>
                   <td className="px-6 py-4">{each.tanggal_buat.split("00")[0].trim()}</td>
+                  {userData.role=='admin'&&
                   <td className="px-6 py-4 flex justify-center gap-3 text-slate-500">
                     {/* <button className="hover:text-indigo-600 transition">
                     <IoIosEye size={18} />
@@ -112,6 +110,7 @@ export function Memo() {
                       <IoIosTrash size={18} />
                     </button>
                   </td>
+                  }
                 </tr>
               ))}
             </tbody>

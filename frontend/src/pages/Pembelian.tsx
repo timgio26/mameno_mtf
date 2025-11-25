@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { PopupModal } from "../components/PopUpModal";
 
 import {
@@ -13,25 +13,27 @@ import { Loading } from "../components/Loading";
 import { useDelPembelian, useGetPembelian, type IBeli } from "../utilities/myQuery";
 import { EditFormPembelian } from "../components/EditFormPembelian";
 import { Pagination } from "../components/Pagination";
+import { InputWithLimiter } from "../components/InputWithLimiter";
 
 export function Pembelian(){
       const [page,setPage] = useState<number>(1)
-      const [searchInput, setSearchInput] = useState<string>("");
-      const [search, setSearch] = useState<string>();
+      // const [searchInput, setSearchInput] = useState<string>("");
+      const [search, setSearch] = useState<string>("");
       const [selectedData,setSelectedData] = useState<IBeli>()
       const [showDelPopup, setShowDelPopup] = useState<boolean>(false);
       const [showEditPopup, setShowEditPopup] = useState<boolean>(false);
       const {data,isError,isLoading} = useGetPembelian(page,search)
       const {mutate,isPending} = useDelPembelian()
 
-          useEffect(() => {
-            const timer = setTimeout(() => {
-              if (searchInput.length == 0 || searchInput.length >= 3) {
-                setSearch(searchInput);
-              }
-            }, 500); // run this code after 500 ms
-            return () => clearTimeout(timer); // cancel previous timer
-          }, [searchInput]);
+          // useEffect(() => {
+          //   const timer = setTimeout(() => {
+          //     if (searchInput.length == 0 || searchInput.length >= 3) {
+          //       setPage(1)
+          //       setSearch(searchInput);
+          //     }
+          //   }, 500); // run this code after 500 ms
+          //   return () => clearTimeout(timer); // cancel previous timer
+          // }, [searchInput]);
 
       function handleDelete(){
         if(!selectedData)return;
@@ -63,13 +65,13 @@ export function Pembelian(){
         
                 <div className="flex items-center gap-2 bg-gray-100 rounded-full px-4 py-2 border border-gray-300 focus-within:ring-2 focus-within:ring-blue-500 transition">
                   {/* <CiSearch className="text-gray-500" size={20} /> */}
-                  <input
-                    type="text"
-                    placeholder="Search Nota..."
-                    className="bg-transparent outline-none text-sm text-gray-700 w-40 sm:w-64"
-                    value={searchInput}
-                    onChange={(e) => setSearchInput(e.target.value)}
-                  />
+                            <InputWithLimiter
+                              placeholder="Search Nota..."
+                              functionAfterDelay={(val:string) => {
+                                setPage(1);
+                                setSearch(val);
+                              }}
+                            />
                 </div>
               </div>
         

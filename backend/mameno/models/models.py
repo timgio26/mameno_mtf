@@ -7,6 +7,7 @@ class AllUser(db.Model):
     id: Mapped[UUID] = mapped_column(default=uuid4,primary_key=True)
     username: Mapped[str] = mapped_column(String(20), unique=True)
     nama: Mapped[str] = mapped_column(Text)
+    role: Mapped[str] = mapped_column(String(10))
     password: Mapped[str] = mapped_column(String(162))
 
     def to_dict(self):
@@ -14,7 +15,7 @@ class AllUser(db.Model):
             "id": self.id,
             "username": self.username,
             "nama": self.nama,
-            "password": self.password
+            "role":self.role
         }
 
 

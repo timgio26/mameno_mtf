@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import {  useState } from "react";
 import { PopupModal } from "../components/PopUpModal";
 
 import {
@@ -10,29 +10,23 @@ import {
 // import { EditForm } from "../components/EditForm";
 import { Error } from "../components/Error";
 import { Loading } from "../components/Loading";
-import { useDelBersama, useGetBersama, type IBersama } from "../utilities/myQuery";
+import { useDelBersama, useGetBersama, useUserCheck, type IBersama } from "../utilities/myQuery";
 // import { EditFormPembelian } from "../components/EditFormPembelian";
 import { EditFormBersama } from "../components/EditFormBersama";
 import { Pagination } from "../components/Pagination";
+import { InputWithLimiter } from "../components/InputWithLimiter";
 
 export function NotaBersama(){
       const [page,setPage] = useState<number>(1)
-      const [search, setSearch] = useState<string>();
-      const [searchInput, setSearchInput] = useState<string>("");
+      const [search, setSearch] = useState<string>("");
       const {data,isError,isLoading} = useGetBersama(page,search)
       const [selectedData,setSelectedData] = useState<IBersama>()
       const [showDelPopup, setShowDelPopup] = useState<boolean>(false);
       const [showEditPopup, setShowEditPopup] = useState<boolean>(false);
       const {mutate,isPending} = useDelBersama()
+      const { data:userData } = useUserCheck();
 
-        useEffect(() => {
-          const timer = setTimeout(() => {
-            if (searchInput.length == 0 || searchInput.length >= 3) {
-              setSearch(searchInput);
-            }
-          }, 500); // run this code after 500 ms
-          return () => clearTimeout(timer); // cancel previous timer
-        }, [searchInput]);
+
 
       function handleDelete(){
         if(!selectedData)return;
@@ -47,7 +41,7 @@ export function NotaBersama(){
         return(<Loading/>)
     }
 
-    if(isError){
+    if(isError||!userData){
         return(<Error/>)
     }
     return(
@@ -63,13 +57,12 @@ export function NotaBersama(){
                 {/* Search Bar */}
         
                 <div className="flex items-center gap-2 bg-gray-100 rounded-full px-4 py-2 border border-gray-300 focus-within:ring-2 focus-within:ring-blue-500 transition">
-                  {/* <CiSearch className="text-gray-500" size={20} /> */}
-                  <input
-                    type="text"
-                    placeholder="Search Nota..."
-                    className="bg-transparent outline-none text-sm text-gray-700 w-40 sm:w-64"
-                    value={searchInput}
-                    onChange={(e) => setSearchInput(e.target.value)}
+                  <InputWithLimiter
+                    placeholder="Search..."
+                    functionAfterDelay={(val:string) => {
+                      setPage(1);
+                      setSearch(val);
+                    }}
                   />
                 </div>
               </div>
@@ -83,7 +76,9 @@ export function NotaBersama(){
                       <th className="px-6 py-4 text-left">Judul</th>
                       <th className="px-6 py-4 text-left">PIC</th>
                       <th className="px-6 py-4 text-left">Tanggal</th>
+                      {userData.role=='admin'&&
                       <th className="px-6 py-4 text-center">Actions</th>
+                      }
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 text-sm text-slate-600">
@@ -95,6 +90,7 @@ export function NotaBersama(){
                         <td className="px-6 py-4">{each.judul}</td>
                         <td className="px-6 py-4">{each.penulis}</td>
                         <td className="px-6 py-4">{each.tanggal_buat.split("00")[0].trim()}</td>
+                        {userData.role=='admin'&&
                         <td className="px-6 py-4 flex justify-center gap-3 text-slate-500">
                           {/* <button className="hover:text-indigo-600 transition">
                             <IoIosEye size={18} />
@@ -114,6 +110,7 @@ export function NotaBersama(){
                             <IoIosTrash size={18} />
                           </button>
                         </td>
+                        }
                       </tr>
                     ))}
                   </tbody>

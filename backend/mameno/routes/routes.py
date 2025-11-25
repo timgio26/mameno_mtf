@@ -1,11 +1,13 @@
-from flask import Blueprint,jsonify,request
+from flask import Blueprint,jsonify,request,send_file
 from mameno.extension import db,GenerateDocNumber
 from mameno.models.models import *
 from werkzeug.security import generate_password_hash,check_password_hash
-from flask_jwt_extended import create_access_token,jwt_required
+from flask_jwt_extended import create_access_token,jwt_required,create_refresh_token,set_access_cookies,set_refresh_cookies,unset_jwt_cookies,get_jwt_identity,get_jwt
 from uuid import UUID
-from sqlalchemy import or_,desc
+from sqlalchemy import or_,desc,text
 from datetime import date
+import pandas as pd
+from io import BytesIO
 
 
 main_bp = Blueprint('main', __name__)
@@ -13,6 +15,20 @@ main_bp = Blueprint('main', __name__)
 @main_bp.route('/version')
 def version():
     return "0.0.1",200
+
+@main_bp.get('/api/notauth')
+def notauth():
+    return "",401
+
+@main_bp.get('/api/user')
+@jwt_required()
+def get_all_user():
+    users = AllUser.query.all()
+    return jsonify({
+        "data": [r.to_dict() for r in users],
+        # "page": page,
+        # "total_pages": (total + per_page - 1) // per_page
+    }), 200
 
 ################### CREATE
 
@@ -132,7 +148,6 @@ def create_bersama():
 @main_bp.get('/api/memo')
 @jwt_required()
 def get_memo_list():
-    
     page = int(request.args.get('page', 1))
     per_page = int(request.args.get('per_page', 3))  # default 20 items per page
     search = str(request.args.get('search'))
@@ -391,6 +406,13 @@ def update_bersama(id):
 
 ################### authentication
 
+@main_bp.get('/api/me')
+@jwt_required()
+def auth_check():
+    claims = get_jwt()
+    user_id = get_jwt_identity()
+    return jsonify({"authenticated": True, "user_id": user_id,"role":claims.get("role")})
+
 @main_bp.post('/api/login')
 def login():
     data = request.get_json()
@@ -401,24 +423,35 @@ def login():
     if not username or not password:
         return jsonify({"error": "Missing username or password"}), 400
 
-    entry = AllUser.query.filter_by(username=username).first()
+    entry = AllUser.query.filter_by(username=username).first_or_404()
 
-    if not check_password_hash(entry.password,password):
+    if not entry or not check_password_hash(entry.password, password):
         return jsonify({"error": "Invalid username or password"}), 401
 
-    # Create JWT token
-    access_token = create_access_token(identity=entry.id)
+    # Create JWT tokens
+    access_token = create_access_token(identity=entry.id,additional_claims={"role":entry.role})
+    refresh_token = create_refresh_token(identity=entry.id)
 
-    return jsonify({
+    # Build response
+    resp = jsonify({
         "message": "Login successful",
-        "token": access_token,
         "user": {
             "username": entry.username,
-            "nama": entry.nama
+            "nama": entry.nama,
+            "user_id":entry.id
         }
-    }), 200
+    })
+
+    # Set tokens in HTTP-only cookies
+    set_access_cookies(resp, access_token)
+    set_refresh_cookies(resp, refresh_token)
+
+    return resp, 200
+
+
 
 @main_bp.post('/api/signup')
+@jwt_required()
 def signup():
     data = request.get_json()
     # Check if username already exists
@@ -429,9 +462,72 @@ def signup():
     userbaru = AllUser(
         username=data['username'],
         nama=data['name'],
+        role=str(data['role']).lower(),
         password=generate_password_hash(data['password'])  # Consider hashing this in production
     )
     db.session.add(userbaru)
     db.session.commit()
 
     return jsonify({"message": "User registered successfully"}), 201
+
+@main_bp.post("/api/logout")
+def logout():
+    resp = jsonify({"msg": "logout successful"})
+    unset_jwt_cookies(resp)   # clears both access + refresh cookies
+    return resp, 200
+
+@main_bp.post("/api/refresh")
+@jwt_required(refresh=True)
+def refresh():
+    user_id = get_jwt_identity()
+    new_access_token = create_access_token(identity=user_id)
+    resp = jsonify({"msg": "token refreshed"})
+    set_access_cookies(resp, new_access_token)  # overwrite old access cookie
+    return resp, 200
+
+################### download
+
+@main_bp.get('/api/download')
+@jwt_required()
+def download_data():
+
+    # Raw SQL query
+    query = """
+        SELECT * FROM tbl_nota
+    """
+    # Run query using SQLAlchemy engine
+    df_nota = pd.read_sql_query(text(query), db.engine)
+
+    query = """
+        SELECT * FROM tbl_memo
+    """
+    df_memo = pd.read_sql_query(text(query), db.engine)
+
+    query = """
+        SELECT * FROM tbl_beli
+    """
+    df_beli = pd.read_sql_query(text(query), db.engine)
+
+    query = """
+        SELECT * FROM tbl_bersama
+    """
+    df_bersama = pd.read_sql_query(text(query), db.engine)
+
+    # Write to Excel in memory
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        df_nota.to_excel(writer, index=False, sheet_name='Nota')
+        df_memo.to_excel(writer, index=False, sheet_name='Memo')
+        df_beli.to_excel(writer, index=False, sheet_name='Pembelian')
+        df_bersama.to_excel(writer, index=False, sheet_name='Nota_Bersama')
+
+
+    output.seek(0)
+
+    # Return as downloadable file
+    return send_file(
+        output,
+        download_name="mameno.xlsx",
+        as_attachment=True,
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
