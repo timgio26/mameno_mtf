@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useAddData, useGetMemo } from "../utilities/myQuery";
+import { useAddData, type IAddDataResp } from "../utilities/myQuery";
 
 type NewFormProp = {
   setShowModal :React.Dispatch<React.SetStateAction<boolean>>
@@ -11,16 +11,16 @@ export function NewForm({setShowModal}:NewFormProp) {
   const [divisi, setDivisi] = useState<string>();
   const [divisiList, setDivisiList] = useState<string[]>([]);
   const {data,mutate,isPending} = useAddData(kategori)
-  const [result,setResult] = useState<string>()
+  const [result,setResult] = useState<IAddDataResp|undefined>()
 
   useEffect(()=>{
-    setResult(data?.no_nota)
+    setResult(data)
   },[data])
 
   function addDivisi() {
     if (!divisi) return;
-    if (divisiList.includes(divisi))return;
-    setDivisiList((curstate) => [...curstate, divisi]);
+    if (divisiList.includes(divisi.toUpperCase()))return;
+    setDivisiList((curstate) => [...curstate, divisi.toUpperCase()]);
     setDivisi("")
   }
 
@@ -29,7 +29,9 @@ export function NewForm({setShowModal}:NewFormProp) {
   }
 
   function submitForm(){
+    // console.log("submit")
     if(!judul||!kategori)return;
+    // console.log("mutate")
     mutate({judul,divisi:divisiList})
   }
 
@@ -41,9 +43,18 @@ export function NewForm({setShowModal}:NewFormProp) {
           <div>
             <h2 className="text-2xl font-bold text-slate-800">📝 New Nota</h2>
           </div>
-          <div>
-            <span>Result : {result}</span>
-          </div>
+<div className="space-y-2">
+  <p className="text-slate-700">
+    <span className="font-semibold">Judul:</span> {data.judul}
+  </p>
+  <p className="text-slate-700">
+    <span className="font-semibold">No. Document:</span> {data.no_doc}
+  </p>
+  <p className="text-slate-700">
+    <span className="font-semibold">PIC:</span> {data.pic}
+  </p>
+</div>
+
         </>
       ) : (
         <>

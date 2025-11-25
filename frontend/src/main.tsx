@@ -10,26 +10,38 @@ import { ToastContainer } from "react-toastify";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Nota } from './pages/Nota';
 import { Memo } from './pages/Memo';
+import { Pembelian } from './pages/Pembelian';
+import { NotaBersama } from './pages/NotaBersama';
+import { Protected } from './pages/Protected';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import { User } from './pages/User';
 
 const queryClient = new QueryClient();
 
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
+    
     <QueryClientProvider client={queryClient}>
 
     <BrowserRouter>
     <Routes>
-      <Route element={<Base/>}>
+      <Route element={<Protected><Base/></Protected>}>
         <Route path="/" element={<Nota/>}/>
         <Route path="/memo" element={<Memo/>}/>
-        <Route path="/auth" element={<Authentication/>}/>
+        <Route path="/pembelian" element={<Pembelian/>}/>
+        <Route path="/bersama" element={<NotaBersama/>}/>
+        <Route path="/user" element={<User/>}/>
       </Route>
+      <Route path="/auth" element={<Authentication/>}/>
     </Routes>
 
     </BrowserRouter>
+
+    <ReactQueryDevtools initialIsOpen={false} />
+
     </QueryClientProvider>
-          <ToastContainer
+    <ToastContainer
         position="top-center"
         autoClose={3000}
         hideProgressBar

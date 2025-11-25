@@ -1,15 +1,15 @@
 import { useState } from "react";
-import { useUpdateNota, type INota } from "../utilities/myQuery"
+import { useUpdatePembelian, type IBeli } from "../utilities/myQuery"
 
 type EditFormProp = {
   setShowModal :React.Dispatch<React.SetStateAction<boolean>>;
-  data :INota
+  data :IBeli
 }
 
-export function EditForm({setShowModal,data}:EditFormProp){
-    const [judulEdit,setJudulEdit] = useState<string>(data.judul_nota) 
-    const [urlEdit,setUrlEdit] =useState<string|null>(data.link_nota)
-    const {mutate,isPending} = useUpdateNota()
+export function EditFormPembelian({setShowModal,data}:EditFormProp){
+    const [judulEdit,setJudulEdit] = useState<string>(data.judul_beli) 
+    const [urlEdit,setUrlEdit] =useState<string|null>(data.link_beli)
+    const {mutate,isPending} = useUpdatePembelian()
 
     function submitForm(){
       mutate({id:data.id,judul:judulEdit,url:urlEdit},{
@@ -23,7 +23,7 @@ export function EditForm({setShowModal,data}:EditFormProp){
         <>
           {/* Header */}
           <div>
-            <h2 className="text-2xl font-bold text-slate-800">📝 Edit Nota</h2>
+            <h2 className="text-2xl font-bold text-slate-800">📝 Edit Form Pembelian</h2>
             {/* <p className="text-sm text-slate-500 mt-1">
               Fill in the details below to create a new nota or memo.
             </p> */}
@@ -36,12 +36,12 @@ export function EditForm({setShowModal,data}:EditFormProp){
 
               className="text-sm font-semibold text-slate-700"
             >
-                No Nota/Memo
+                No Form Pembelian
             </span>
             <span
               className="rounded-lg  border-slate-300 px-4 py-1 text-sm  resize-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition"
               >
-                {data.no_nota}
+                {data.no_beli}
               </span>
           </div>
 
@@ -55,7 +55,7 @@ export function EditForm({setShowModal,data}:EditFormProp){
             <span
               className="rounded-lg  border-slate-300 px-4 py-1 text-sm  resize-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition"
               >
-                {data.penulis_nota}
+                {data.penulis_beli}
               </span>
           </div>
 
@@ -79,7 +79,7 @@ export function EditForm({setShowModal,data}:EditFormProp){
               htmlFor="Judul"
               className="text-sm font-semibold text-slate-700"
             >
-              Judul Nota/Memo
+              Judul Form Pembelian
             </label>
             <textarea
               name="Judul"

@@ -4,11 +4,22 @@ import { FaPlus } from "react-icons/fa";
 import { useState } from "react";
 import { PopupModal } from "../components/PopUpModal";
 import { NewForm } from "../components/NewForm";
+import { downloadData, useLogOut, useUserCheck } from "../utilities/myQuery";
 
 
 export function Base() {
   const year = new Date().getFullYear();
+  const {mutate:logout} = useLogOut()
   const [showModal,setShowModal] = useState<boolean>(false)
+  const [downloading,setIsDownloading] = useState<boolean>(false) 
+  const { data:userData } = useUserCheck();
+
+  async function handle_download(){
+    setIsDownloading(true)
+    await downloadData()
+    setIsDownloading(false)
+  }
+  
 
   return (
     <div className="min-h-screen flex from-slate-50 to-slate-100 text-gray-800 font-sans">
@@ -27,24 +38,37 @@ export function Base() {
             </h1>
           </div>
 
-          <nav className="flex flex-col p-6 gap-6">
-            <NavLink to="/" className="text-base font-medium hover:text-blue-600">Nota</NavLink>
-            <NavLink to="/memo" className="text-base font-medium hover:text-blue-600">Memo</NavLink>
-            <NavLink to="/pembelian" className="text-base font-medium hover:text-blue-600">Form Pembelian</NavLink>
-            <NavLink to="/bersama" className="text-base font-medium hover:text-blue-600">Nota Bersama</NavLink>
+          <nav className="flex flex-col p-6 gap-3">
+            <NavLink to="/" className={({isActive})=>isActive?"text-base font-medium text-blue-600":"text-base font-medium"}>Nota</NavLink>
+            <NavLink to="/memo" className={({isActive})=>isActive?"text-base font-medium text-blue-600":"text-base font-medium"}>Memo</NavLink>
+            <NavLink to="/pembelian" className={({isActive})=>isActive?"text-base font-medium text-blue-600":"text-base font-medium"}>Form Pembelian</NavLink>
+            <NavLink to="/bersama" className={({isActive})=>isActive?"text-base font-medium text-blue-600":"text-base font-medium"}>Nota Bersama</NavLink>
+            {userData?.role=='admin'&&
+            <NavLink to="/user" className={({isActive})=>isActive?"text-base font-medium text-blue-600":"text-base font-medium"}>User</NavLink>
+            }
+            <span className="text-base font-medium cursor-pointer" onClick={handle_download}>{downloading?"Loading...":"Download"}</span>
+
           </nav>
 
         </div>
 
+        <div>
+
+        <div className="p-6 ">
+              
+            <span className="text-base font-medium flex cursor-pointer" onClick={()=>{logout()}}>Logout</span>
+            </div>
+
         {/* Bottom Section */}
         <div className="p-6 border-t border-slate-200">
           
-          <div className="mb-4 text-sm text-slate-500 leading-relaxed">
+          <div className="text-sm text-slate-500 leading-relaxed">
             <p className="font-medium tracking-wide">&copy; {year} AR MTF</p>
             <p className="italic text-slate-400">
               Crafted with care in Indonesia
             </p>
           </div>
+        </div>
         </div>
       </aside>
 

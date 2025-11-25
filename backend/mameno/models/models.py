@@ -7,6 +7,7 @@ class AllUser(db.Model):
     id: Mapped[UUID] = mapped_column(default=uuid4,primary_key=True)
     username: Mapped[str] = mapped_column(String(20), unique=True)
     nama: Mapped[str] = mapped_column(Text)
+    role: Mapped[str] = mapped_column(String(10))
     password: Mapped[str] = mapped_column(String(162))
 
     def to_dict(self):
@@ -14,7 +15,7 @@ class AllUser(db.Model):
             "id": self.id,
             "username": self.username,
             "nama": self.nama,
-            "password": self.password
+            "role":self.role
         }
 
 
@@ -86,7 +87,7 @@ class TblBeli(db.Model):
     def to_dict(self):
         return {
             "id": self.id,
-            # "penulis_beli": self.penulis_beli,
+            "penulis_beli": self.user.nama,
             "judul_beli": self.judul_beli,
             "tanggal_buat": self.tanggal_buat,
             # "tahun_beli": self.tahun_beli,
@@ -112,7 +113,7 @@ class TblBersama(db.Model):
     def to_dict(self):
         return {
             "id": self.id,
-            # "penulis": self.penulis,
+            "penulis": self.user.nama,
             "judul": self.judul,
             "tanggal_buat": self.tanggal_buat,
             # "tahun": self.tahun,
