@@ -301,7 +301,7 @@ def create_bersama_hist():
 @jwt_required()
 def get_memo_list():
     page = int(request.args.get('page', 1))
-    per_page = int(request.args.get('per_page', 3))  # default 20 items per page
+    per_page = int(request.args.get('per_page', 10))  # default 20 items per page
     search = str(request.args.get('search'))
 
     # Calculate offset
@@ -333,7 +333,7 @@ def get_memo_list():
 def get_beli_list():
     # records = TblBeli.query.all()
     page = int(request.args.get('page', 1))
-    per_page = int(request.args.get('per_page', 3))  # default 20 items per page
+    per_page = int(request.args.get('per_page', 10))  # default 20 items per page
     search = str(request.args.get('search'))
 
     # Calculate offset
@@ -361,7 +361,7 @@ def get_beli_list():
 def get_bersama_list():
     # records = TblBersama.query.all()
     page = int(request.args.get('page', 1))
-    per_page = int(request.args.get('per_page', 3))  # default 20 items per page
+    per_page = int(request.args.get('per_page', 10))  # default 20 items per page
     search = str(request.args.get('search'))
 
     # Calculate offset
@@ -389,7 +389,7 @@ def get_bersama_list():
 @jwt_required()
 def get_nota_list():
     page = int(request.args.get('page', 1))
-    per_page = int(request.args.get('per_page', 3))  # default 20 items per page
+    per_page = int(request.args.get('per_page', 10))  # default 20 items per page
     search = str(request.args.get('search'))
 
     # Calculate offset
