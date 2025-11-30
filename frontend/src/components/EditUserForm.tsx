@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useSignUp, useUpdateUser, type IUser } from "../utilities/myQuery";
+import { useUpdateUser, type IUser } from "../utilities/myQuery";
 
 type UserFormValues = {
   id:string,
