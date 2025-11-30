@@ -24,7 +24,7 @@ def notauth():
 @jwt_required()
 def get_all_user():
     page = int(request.args.get('page', 1))
-    per_page = int(request.args.get('per_page', 3))
+    per_page = int(request.args.get('per_page', 10))
     offset = (page - 1) * per_page
     # users = AllUser.query.all()
     query = AllUser.query
@@ -96,34 +96,6 @@ def create_nota():
         "judul":newnota.judul_nota
     }), 201
 
-@main_bp.post('/api/nota_hist')
-# @jwt_required()
-def create_nota_hist():
-    data = request.get_json()
-    # now = date.today()
-    # no, no_nota = GenerateDocNumber(model=TblNota, prefix="Nota-CARM")
-
-    newnota = TblNota(
-        # penulis_nota=data.get("penulis"),
-        user_id=UUID(data.get("user_id")),
-        judul_nota=data.get("judul"),
-        tanggal_buat=data.get("tanggal_buat"),
-        # tahun_nota=now.year,
-        no=data.get("no"),
-        no_nota=data.get("no_nota"),
-        linknota = data.get('url')
-    )
-    db.session.add(newnota)
-    db.session.commit()
-
-    return jsonify({
-        "message": "Nota created successfully",
-        "id": newnota.id,
-        "no_doc": newnota.no_nota,
-        "pic":newnota.user.nama,
-        "judul":newnota.judul_nota
-    }), 201
-
 @main_bp.post('/api/memo')
 @jwt_required()
 def create_memo():
@@ -147,34 +119,6 @@ def create_memo():
         "message": "Memo created successfully",
         "id": newmemo.id,
         "no_doc": no_memo,
-        "pic":newmemo.user.nama,
-        "judul":newmemo.judul_memo
-    }), 201
-
-@main_bp.post('/api/memo_hist')
-# @jwt_required()
-def create_memo_hist():
-    data = request.get_json()
-    # now = date.today()
-    # no, no_memo = GenerateDocNumber(model=TblMemo, prefix="Memo-CARM")
-
-    newmemo = TblMemo(
-        # penulis_memo=data.get("penulis"),
-        user_id=UUID(data.get("user_id")),
-        judul_memo=data.get("judul"),
-        tanggal_buat=data.get("tanggal_buat"),
-        # tahun_memo=now.year,
-        no=data.get("no"),
-        no_memo=data.get("no_memo"),
-        linkmemo = data.get('url')        
-    )
-    db.session.add(newmemo)
-    db.session.commit()
-
-    return jsonify({
-        "message": "Memo created successfully",
-        "id": newmemo.id,
-        "no_doc": newmemo.no_memo,
         "pic":newmemo.user.nama,
         "judul":newmemo.judul_memo
     }), 201
@@ -206,34 +150,6 @@ def create_beli():
         "judul":newbeli.judul_beli
     }), 201
 
-@main_bp.post('/api/beli_hist')
-# @jwt_required()
-def create_beli_hist():
-    data = request.get_json()
-    # now = date.today()
-    # no, no_beli = GenerateDocNumber(model=TblBeli, prefix="FPPA-CARM")
-
-    newbeli = TblBeli(
-        # penulis_beli=data.get("penulis"),
-        user_id=UUID(data.get("user_id")),
-        judul_beli=data.get("judul"),
-        tanggal_buat=data.get("tanggal_buat"),
-        # tahun_beli=now.year,
-        no=data.get("no"),
-        no_beli=data.get("no_beli"),
-        linkbeli = data.get('url')
-    )
-    db.session.add(newbeli)
-    db.session.commit()
-
-    return jsonify({
-        "message": "Form Pembelian created successfully",
-        "id": newbeli.id,
-        "no_doc": newbeli.no_beli,
-        "pic":newbeli.user.nama,
-        "judul":newbeli.judul_beli
-    }), 201
-
 @main_bp.post('/api/bersama')
 @jwt_required()
 def create_bersama():
@@ -252,37 +168,6 @@ def create_bersama():
         # tahun=now.year,
         no=no,
         no_bersama=no_bersama
-    )
-    db.session.add(newdata)
-    db.session.commit()
-
-    return jsonify({
-        "message": "Nota Bersama created successfully",
-        "id": newdata.id,
-        "no_doc": newdata.no_bersama,
-        "pic":newdata.user.nama,
-        "judul":newdata.judul
-    }), 201
-
-@main_bp.post('/api/bersama_hist')
-# @jwt_required()
-def create_bersama_hist():
-    data = request.get_json()
-    # now = date.today()
-    # print(data.get("divisi"))
-    # divlist = ['div1', 'div2', 'div3', 'div4', 'div5']
-    # list_str = "-".join([str(div).upper() for div in data.get("divisi")])
-    # no, no_bersama = GenerateDocNumber(model=TblBersama, prefix=f"Nota Bersama-{list_str}")
-
-    newdata = TblBersama(
-        # penulis=data.get("penulis"),
-        user_id=UUID(data.get("user_id")),
-        judul=data.get("judul"),
-        tanggal_buat=data.get("tanggal_buat"),
-        # tahun=now.year,
-        no=data.get("no"),
-        no_bersama=data.get("no_bersama"),
-        link = data.get("url")
     )
     db.session.add(newdata)
     db.session.commit()
@@ -602,7 +487,7 @@ def login():
 
 
 @main_bp.post('/api/signup')
-# @jwt_required()
+@jwt_required()
 def signup():
     data = request.get_json()
     # Check if username already exists
