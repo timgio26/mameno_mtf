@@ -1,0 +1,5 @@
+[[redirects]]
+  from = "/*"
+  to = "https://timgio26.pythonanywhere.com/:splat"
+  status = 200
+  force = true
