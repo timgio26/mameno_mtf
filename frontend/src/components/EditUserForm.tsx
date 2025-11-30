@@ -1,29 +1,33 @@
 import { useState } from "react";
-import { useSignUp } from "../utilities/myQuery";
+import { useSignUp, useUpdateUser, type IUser } from "../utilities/myQuery";
 
 type UserFormValues = {
+  id:string,
   username: string;
   name: string;
-  password: string;
+  active: boolean;
   role: string;
 };
 
 // type UserFormProps = {
 //   onSubmit: (values: UserFormValues) => void;
 // };
+// const active = true
 
 type NewFormProp = {
-  setShowModal :React.Dispatch<React.SetStateAction<boolean>>
+  setShowModal :React.Dispatch<React.SetStateAction<boolean>>;
+  data:IUser
 }
 
-export function NewUserForm({ setShowModal }: NewFormProp) {
+export function EditUserForm({ setShowModal,data}: NewFormProp) {
 
-  const {mutate,isPending} = useSignUp()
+  const {mutate,isPending} = useUpdateUser()
   const [form, setForm] = useState<UserFormValues>({
-    username: "",
-    name: "",
-    password: "",
-    role: "user", // default role
+    id:data.id,
+    username: data.username,
+    name: data.nama,
+    active: data.active,
+    role: data.role, // default role
   });
 
   const handleChange = (
@@ -32,6 +36,11 @@ export function NewUserForm({ setShowModal }: NewFormProp) {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
+
+  function handleToogle(){
+    console.log(form)
+    setForm((prev) => ({ ...prev, ['active']: !prev.active }));
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,7 +89,7 @@ export function NewUserForm({ setShowModal }: NewFormProp) {
         />
       </div>
 
-      <div>
+      {/* <div>
         <label className="block text-sm font-medium text-gray-700">
           Password
         </label>
@@ -92,7 +101,7 @@ export function NewUserForm({ setShowModal }: NewFormProp) {
           className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
           placeholder="Enter password"
         />
-      </div>
+      </div> */}
 
       <div>
         <label className="block text-sm font-medium text-gray-700">Role</label>
@@ -108,7 +117,35 @@ export function NewUserForm({ setShowModal }: NewFormProp) {
         </select>
       </div>
 
-            <div className="pt-4 flex justify-end gap-4 border-t border-slate-200">
+    <div>
+      <span className="block text-sm font-medium text-gray-700">Status</span>
+      <div className="flex items-center gap-3">
+        <span className={`text-sm ${!form.active ? "text-gray-900" : "text-gray-400"}`}>
+          Inactive
+        </span>
+
+        <div
+          onClick={handleToogle}
+          className={`w-12 h-6 flex items-center rounded-full p-1 cursor-pointer transition-colors 
+            ${form.active ? "bg-green-500" : "bg-gray-300"}`}
+        >
+          <div
+            className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform 
+              ${form.active ? "translate-x-6" : "translate-x-0"}`}
+          />
+        </div>
+
+        <span className={`text-sm ${form.active ? "text-gray-900" : "text-gray-400"}`}>
+          Active
+        </span>
+      </div>
+
+
+    </div>
+
+
+
+    <div className="pt-4 flex justify-end gap-4 border-t border-slate-200">
         <button
           className="px-4 py-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium transition"
           onClick={() => setShowModal(false)}
@@ -118,10 +155,10 @@ export function NewUserForm({ setShowModal }: NewFormProp) {
         {/* {!result && ( */}
           <button
             className="px-4 py-2 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition"
-            // onClick={submitForm}
+            onClick={handleSubmit}
           >
             {/* Add */}
-            {isPending ? "Loading..." : "Add"}
+            {isPending ? "Loading..." : "Update"}
           </button>
         {/* )} */}
       </div>

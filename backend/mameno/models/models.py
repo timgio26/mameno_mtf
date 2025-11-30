@@ -1,6 +1,6 @@
 from mameno.extension import db
 from sqlalchemy.orm import Mapped,mapped_column,relationship
-from sqlalchemy import Integer, String, Text, Date
+from sqlalchemy import Integer, String, Text, Date,Boolean
 from uuid import uuid4,UUID
 
 class AllUser(db.Model):
@@ -8,6 +8,7 @@ class AllUser(db.Model):
     username: Mapped[str] = mapped_column(String(20), unique=True)
     nama: Mapped[str] = mapped_column(Text)
     role: Mapped[str] = mapped_column(String(10))
+    active:Mapped[bool] = mapped_column(Boolean)
     password: Mapped[str] = mapped_column(String(162))
 
     def to_dict(self):
@@ -15,7 +16,8 @@ class AllUser(db.Model):
             "id": self.id,
             "username": self.username,
             "nama": self.nama,
-            "role":self.role
+            "role":self.role,
+            "active":self.active
         }
 
 

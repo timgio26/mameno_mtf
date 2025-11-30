@@ -1,39 +1,41 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import {IoIosTrash,IoMdOpen,IoMdCreate,IoIosCloseCircleOutline,} from "react-icons/io";
+import { useDelPembelian, useGetPembelian, useUserCheck, type IBeli } from "../utilities/myQuery";
 import { PopupModal } from "../components/PopUpModal";
-
-import {
-  IoIosTrash,
-  // IoIosEye,
-  IoMdCreate,
-  IoIosCloseCircleOutline,
-} from "react-icons/io";
-// import { EditForm } from "../components/EditForm";
 import { Error } from "../components/Error";
 import { Loading } from "../components/Loading";
-import { useDelPembelian, useGetPembelian, type IBeli } from "../utilities/myQuery";
 import { EditFormPembelian } from "../components/EditFormPembelian";
 import { Pagination } from "../components/Pagination";
-import { InputWithLimiter } from "../components/InputWithLimiter";
+// import { InputWithLimiter } from "../components/InputWithLimiter";
 
 export function Pembelian(){
       const [page,setPage] = useState<number>(1)
-      // const [searchInput, setSearchInput] = useState<string>("");
+      const [input, setInput] = useState<string>("");
       const [search, setSearch] = useState<string>("");
       const [selectedData,setSelectedData] = useState<IBeli>()
       const [showDelPopup, setShowDelPopup] = useState<boolean>(false);
       const [showEditPopup, setShowEditPopup] = useState<boolean>(false);
       const {data,isError,isLoading} = useGetPembelian(page,search)
       const {mutate,isPending} = useDelPembelian()
+      const { data: userData } = useUserCheck();
 
-          // useEffect(() => {
-          //   const timer = setTimeout(() => {
-          //     if (searchInput.length == 0 || searchInput.length >= 3) {
-          //       setPage(1)
-          //       setSearch(searchInput);
-          //     }
-          //   }, 500); // run this code after 500 ms
-          //   return () => clearTimeout(timer); // cancel previous timer
-          // }, [searchInput]);
+      useEffect(()=>{
+          if(!data)return;
+          if(page>data.total_pages){
+            setPage(data.total_pages)
+          }
+        },[data])
+
+      useEffect(() => {
+        const timer = setTimeout(() => {
+          if (input.length == 0 || input.length >= 3) {
+            setPage(1);
+            setSearch(input);
+          }
+        }, 500); // run this code after 500 ms
+        return () => clearTimeout(timer); // cancel previous timer
+      }, [input]);
+
 
       function handleDelete(){
         if(!selectedData)return;
@@ -48,7 +50,7 @@ export function Pembelian(){
         return(<Loading/>)
     }
 
-    if(isError){
+    if(isError|| !userData){
         return(<Error/>)
     }
     return(
@@ -65,13 +67,13 @@ export function Pembelian(){
         
                 <div className="flex items-center gap-2 bg-gray-100 rounded-full px-4 py-2 border border-gray-300 focus-within:ring-2 focus-within:ring-blue-500 transition">
                   {/* <CiSearch className="text-gray-500" size={20} /> */}
-                            <InputWithLimiter
-                              placeholder="Search Nota..."
-                              functionAfterDelay={(val:string) => {
-                                setPage(1);
-                                setSearch(val);
-                              }}
-                            />
+                   <input
+            type="text"
+            placeholder="Search..."
+            className="bg-transparent outline-none text-sm text-gray-700 w-40 sm:w-64"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+          />
                 </div>
               </div>
         
@@ -96,25 +98,40 @@ export function Pembelian(){
                         <td className="px-6 py-4">{each.judul_beli}</td>
                         <td className="px-6 py-4">{each.penulis_beli}</td>
                         <td className="px-6 py-4">{each.tanggal_buat.split("00")[0].trim()}</td>
-                        <td className="px-6 py-4 flex justify-center gap-3 text-slate-500">
-                          {/* <button className="hover:text-indigo-600 transition">
-                            <IoIosEye size={18} />
-                          </button> */}
-                          <button className="hover:text-green-600 transition"
-                          onClick={()=>{
+                  <td className="px-6 py-4 flex justify-center gap-3 text-slate-500">
+                    {each.link_beli && (
+                      <a
+                        className="hover:text-indigo-600 transition"
+                        href={each.link_beli}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <IoMdOpen size={18} />
+                      </a>
+                    )}
+                    {userData.role == "admin" && (
+                      <>
+                        <button
+                          className="hover:text-green-600 transition"
+                          onClick={() => {
                             setSelectedData(each);
-                            setShowEditPopup(true)
-                            }}>
-                            <IoMdCreate size={18} />
-                          </button>
-                          <button className="hover:text-red-600 transition" 
-                          onClick={()=>{
+                            setShowEditPopup(true);
+                          }}
+                        >
+                          <IoMdCreate size={18} />
+                        </button>
+                        <button
+                          className="hover:text-red-600 transition"
+                          onClick={() => {
                             setSelectedData(each);
-                            setShowDelPopup(true)
-                            }}>
-                            <IoIosTrash size={18} />
-                          </button>
-                        </td>
+                            setShowDelPopup(true);
+                          }}
+                        >
+                          <IoIosTrash size={18} />
+                        </button>
+                      </>
+                    )}
+                  </td>
                       </tr>
                     ))}
                   </tbody>

@@ -1,14 +1,41 @@
-import { IoIosTrash, IoMdCreate } from "react-icons/io";
+import {
+  IoIosCloseCircleOutline,
+  IoIosTrash,
+  IoMdCreate,
+} from "react-icons/io";
 import { Error } from "../components/Error";
 import { Loading } from "../components/Loading";
-import { useGetUser } from "../utilities/myQuery";
+import { useDelUser, useGetUser, type IUser } from "../utilities/myQuery";
 import { PopupModal } from "../components/PopUpModal";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { NewUserForm } from "../components/NewUserForm";
+import { EditUserForm } from "../components/EditUserForm";
+import { Pagination } from "../components/Pagination";
 
 export function User() {
-  const { data, isError, isLoading } = useGetUser();
-  const [addUserModalVisible,setAddUserModalVisible] = useState<boolean>(false)
+  const [page,setPage] = useState<number>(1)
+  const { data, isError, isLoading } = useGetUser(page);
+  const { mutate, isPending: isDeleting } = useDelUser();
+  const [addUserModalVisible, setAddUserModalVisible] =useState<boolean>(false);
+  const [editUserModalVisible, setEditUserModalVisible] =useState<boolean>(false);
+  const [delUserModalVisible, setDelUserModalVisible] =useState<boolean>(false);
+  const [selectedData, setSelectedData] = useState<IUser>();
+
+    useEffect(()=>{
+      if(!data)return;
+      if(page>data.total_pages){
+        setPage(data.total_pages)
+      }
+    },[data])
+
+  function handleDelete() {
+    if (!selectedData) return;
+    mutate(selectedData.id, {
+      onSuccess: () => {
+        setDelUserModalVisible(false);
+      },
+    });
+  }
 
   if (isLoading) {
     return <Loading />;
@@ -25,10 +52,12 @@ export function User() {
 
         {/* Search Bar */}
 
-        <div className="flex items-center gap-2 bg-gray-100 rounded-full px-4 py-2 border border-gray-300 cursor-pointer hover:opacity-75"
-        onClick={()=>setAddUserModalVisible(true)}>
+        <div
+          className="flex items-center gap-2 bg-gray-100 rounded-full px-4 py-2 border border-gray-300 cursor-pointer hover:opacity-75"
+          onClick={() => setAddUserModalVisible(true)}
+        >
           {/* <div> */}
-            <span>Add New User</span>
+          <span>Add New User</span>
           {/* </div> */}
         </div>
       </div>
@@ -53,7 +82,7 @@ export function User() {
                   </td>
                   <td className="px-6 py-4">{each.username}</td>
                   <td className="px-6 py-4">{each.role}</td>
-                  <td className="px-6 py-4">active/inactive</td>
+                  <td className="px-6 py-4">{each.active==true?"Active":"Inactive"}</td>
 
                   <td className="px-6 py-4 flex justify-center gap-3 text-slate-500">
                     {/* <button className="hover:text-indigo-600 transition">
@@ -62,8 +91,8 @@ export function User() {
                     <button
                       className="hover:text-green-600 transition"
                       onClick={() => {
-                        //     setSelectedData(each);
-                        //     setShowEditPopup(true)
+                            setSelectedData(each);
+                            setEditUserModalVisible(true)
                       }}
                     >
                       <IoMdCreate size={18} />
@@ -71,8 +100,8 @@ export function User() {
                     <button
                       className="hover:text-red-600 transition"
                       onClick={() => {
-                        // setSelectedData(each);
-                        // setShowDelPopup(true)
+                        setSelectedData(each);
+                        setDelUserModalVisible(true);
                       }}
                     >
                       <IoIosTrash size={18} />
@@ -82,6 +111,16 @@ export function User() {
               ))}
             </tbody>
           </table>
+                    <Pagination
+                      onNext={() => {
+                        setPage((curPage) => curPage + 1);
+                      }}
+                      onPrev={() => {
+                        setPage((curPage) => curPage - 1);
+                      }}
+                      page={page}
+                      total_page={data.total_pages}
+                    />
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center text-center text-gray-500 py-12">
@@ -90,7 +129,44 @@ export function User() {
         </div>
       )}
 
-      <PopupModal visible={addUserModalVisible} children={<NewUserForm setShowModal={setAddUserModalVisible}/>}/>
+      <PopupModal
+        visible={addUserModalVisible}
+        children={<NewUserForm setShowModal={setAddUserModalVisible} />}
+      />
+      <PopupModal visible={delUserModalVisible}>
+        <>
+                <div className="space-y-4">
+          <p className="text-sm text-gray-700">
+            Are you sure you want to delete{" "}
+            {/* <strong>{selectedUser.name}</strong>? */}
+          </p>
+        </div>
+        {/* Icon */}
+        <div className="flex justify-center mt-6">
+          <IoIosCloseCircleOutline size={64} className="text-red-500" />
+        </div>
+        {/* Button */}
+        <div className="mt-6 flex justify-end gap-3">
+          <button
+            onClick={() => setDelUserModalVisible(false)}
+            className="px-4 py-2 rounded-full bg-gray-100 hover:bg-gray-200 text-sm font-medium text-gray-700 transition"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleDelete}
+            data-testid="confirmButton"
+            className="px-4 py-2 rounded-full bg-red-600 hover:bg-red-700 text-sm font-medium text-white transition"
+          >
+            {isDeleting ? "Loading" : "Delete"}
+            {/* Delete */}
+          </button>
+        </div>
+        </>
+      </PopupModal>
+      {selectedData&&
+      <PopupModal visible={editUserModalVisible} children={<EditUserForm setShowModal={setEditUserModalVisible} data={selectedData}/>}/>
+      }
     </div>
   );
 }
