@@ -1,5 +1,5 @@
 [[redirects]]
-  from = "/*"
-  to = "https://mameno.pythonanywhere.com/:splat"
+  from = "/api/*"
+  to = "https://mameno.pythonanywhere.com/api/:splat"
   status = 200
   force = true
