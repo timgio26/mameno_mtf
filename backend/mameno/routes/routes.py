@@ -535,28 +535,28 @@ def download_data():
     # Run query using SQLAlchemy engine
     df_nota = pd.read_sql_query(text(query), db.engine)
 
-    query = """
-        SELECT * FROM tbl_memo
-    """
-    df_memo = pd.read_sql_query(text(query), db.engine)
+    # query = """
+    #     SELECT * FROM tbl_memo
+    # """
+    # df_memo = pd.read_sql_query(text(query), db.engine)
 
-    query = """
-        SELECT * FROM tbl_beli
-    """
-    df_beli = pd.read_sql_query(text(query), db.engine)
+    # query = """
+    #     SELECT * FROM tbl_beli
+    # """
+    # df_beli = pd.read_sql_query(text(query), db.engine)
 
-    query = """
-        SELECT * FROM tbl_bersama
-    """
-    df_bersama = pd.read_sql_query(text(query), db.engine)
+    # query = """
+    #     SELECT * FROM tbl_bersama
+    # """
+    # df_bersama = pd.read_sql_query(text(query), db.engine)
 
     # Write to Excel in memory
     output = BytesIO()
     with pd.ExcelWriter(output, engine='openpyxl') as writer:
         df_nota.to_excel(writer, index=False, sheet_name='Nota')
-        df_memo.to_excel(writer, index=False, sheet_name='Memo')
-        df_beli.to_excel(writer, index=False, sheet_name='Pembelian')
-        df_bersama.to_excel(writer, index=False, sheet_name='Nota_Bersama')
+        # df_memo.to_excel(writer, index=False, sheet_name='Memo')
+        # df_beli.to_excel(writer, index=False, sheet_name='Pembelian')
+        # df_bersama.to_excel(writer, index=False, sheet_name='Nota_Bersama')
 
 
     output.seek(0)
