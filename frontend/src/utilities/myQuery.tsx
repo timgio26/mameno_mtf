@@ -207,6 +207,7 @@ export function useGetNota(page:number,search:string){
     queryKey:["nota",page,search],
     queryFn:async()=>{
       const resp = await api.get(`api/nota?page=${page}&search=${search}`,{withCredentials:true})
+      console.log(page,search,resp)
       return resp.data
     },
     retry:false

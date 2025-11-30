@@ -19,12 +19,12 @@ export function Pembelian(){
       const {mutate,isPending} = useDelPembelian()
       const { data: userData } = useUserCheck();
 
-      useEffect(()=>{
-          if(!data)return;
-          if(page>data.total_pages){
-            setPage(data.total_pages)
-          }
-        },[data])
+  useEffect(() => {
+    if (!data || data.total_pages==0) return;
+    if (page > data.total_pages) {
+      setPage(data.total_pages);
+    }
+  }, [data]);
 
       useEffect(() => {
         const timer = setTimeout(() => {
@@ -78,7 +78,7 @@ export function Pembelian(){
               </div>
         
               {data && data.data.length>0 ?(
-              <div>
+              <div className="max-h-100 overflow-y-scroll">
                 <table className="min-w-full divide-y divide-slate-200 rounded-xl overflow-hidden shadow-lg bg-white">
                   <thead className="bg-slate-100 text-slate-700 text-sm font-semibold tracking-wide">
                     <tr>

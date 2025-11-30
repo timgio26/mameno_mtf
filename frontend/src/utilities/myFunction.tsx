@@ -17,7 +17,6 @@ export const api = axios.create();
 api.interceptors.response.use(
   undefined,
   async (err) => {
-    console.log('refresh',err)
     const csrfToken = Cookies.get("csrf_access_token");
     if (err.response?.status === 401) {
       try {
