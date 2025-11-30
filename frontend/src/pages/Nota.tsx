@@ -1,45 +1,57 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PopupModal } from "../components/PopUpModal";
-import { type INota, useDelNota, useGetNota, useUserCheck } from "../utilities/myQuery";
-import {
-  IoIosTrash,
-  // IoIosEye,
-  IoMdCreate,
-  IoIosCloseCircleOutline,
-} from "react-icons/io";
+import {type INota,useDelNota,useGetNota,useUserCheck} from "../utilities/myQuery";
+import {IoIosTrash,IoMdOpen,IoMdCreate,IoIosCloseCircleOutline} from "react-icons/io";
 import { EditForm } from "../components/EditForm";
 import { Error } from "../components/Error";
 import { Loading } from "../components/Loading";
 import { Pagination } from "../components/Pagination";
-import { InputWithLimiter } from "../components/InputWithLimiter";
 
 export function Nota() {
-  const [page,setPage] = useState<number>(1)
+  const [page, setPage] = useState<number>(1);
   const [search, setSearch] = useState<string>("");
-  const { data, isLoading, isError } = useGetNota(page,search);
-  const {mutate:deleteNota, isPending:isDeleting} = useDelNota()
-  const [selectedData,setSelectedData] = useState<INota>()
+  const { data, isLoading, isError } = useGetNota(page, search);
+  const { mutate: deleteNota, isPending: isDeleting } = useDelNota();
+  const [selectedData, setSelectedData] = useState<INota>();
   const [showDelPopup, setShowDelPopup] = useState<boolean>(false);
   const [showEditPopup, setShowEditPopup] = useState<boolean>(false);
-  const { data:userData } = useUserCheck();
-  
+  const { data: userData } = useUserCheck();
+  const [input, setInput] = useState<string>("");
 
-  function handleDeleteNota(){
-    if(!selectedData)return;
-    deleteNota(selectedData.id,{
-      onSuccess:()=>{
-        setSelectedData(undefined)
-        setShowDelPopup(false)
+  //if delete on reduce number of page
+  useEffect(() => {
+    if (!data) return;
+    if (page > data.total_pages) {
+      setPage(data.total_pages);
+    }
+  }, [data]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (input.length == 0 || input.length >= 3) {
+        setPage(1);
+        setSearch(input);
       }
-    })
+    }, 500); // run this code after 500 ms
+    return () => clearTimeout(timer); // cancel previous timer
+  }, [input]);
+
+  function handleDeleteNota() {
+    if (!selectedData) return;
+    deleteNota(selectedData.id, {
+      onSuccess: () => {
+        setSelectedData(undefined);
+        setShowDelPopup(false);
+      },
+    });
   }
 
-  if(isLoading){
-    return(<Loading/>)
+  if (isLoading) {
+    return <Loading />;
   }
 
-  if(isError||!userData){
-    return(<Error/>)
+  if (isError || !userData) {
+    return <Error />;
   }
 
   return (
@@ -51,13 +63,12 @@ export function Nota() {
         {/* Search Bar */}
 
         <div className="flex items-center gap-2 bg-gray-100 rounded-full px-4 py-2 border border-gray-300 focus-within:ring-2 focus-within:ring-blue-500 transition">
-
-          <InputWithLimiter
-            placeholder="Search Nota..."
-            functionAfterDelay={(val:string) => {
-              setPage(1);
-              setSearch(val);
-            }}
+          <input
+            type="text"
+            placeholder="Search..."
+            className="bg-transparent outline-none text-sm text-gray-700 w-40 sm:w-64"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
           />
         </div>
       </div>
@@ -71,9 +82,7 @@ export function Nota() {
                 <th className="px-6 py-4 text-left">Judul</th>
                 <th className="px-6 py-4 text-left">PIC</th>
                 <th className="px-6 py-4 text-left">Tanggal</th>
-                {userData.role == "admin" && (
-                  <th className="px-6 py-4 text-center">Actions</th>
-                )}
+                <th className="px-6 py-4 text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-sm text-slate-600">
@@ -87,31 +96,41 @@ export function Nota() {
                   <td className="px-6 py-4">
                     {each.tanggal_buat.split("00")[0].trim()}
                   </td>
-                  {userData.role == "admin" && (
-                    <td className="px-6 py-4 flex justify-center gap-3 text-slate-500">
-                      {/* <button className="hover:text-indigo-600 transition">
-                    <IoIosEye size={18} />
-                  </button> */}
-                      <button
-                        className="hover:text-green-600 transition"
-                        onClick={() => {
-                          setSelectedData(each);
-                          setShowEditPopup(true);
-                        }}
+
+                  <td className="px-6 py-4 flex justify-center gap-3 text-slate-500">
+                    {each.link_nota && (
+                      <a
+                        className="hover:text-indigo-600 transition"
+                        href={each.link_nota}
+                        target="_blank"
+                        rel="noopener noreferrer"
                       >
-                        <IoMdCreate size={18} />
-                      </button>
-                      <button
-                        className="hover:text-red-600 transition"
-                        onClick={() => {
-                          setSelectedData(each);
-                          setShowDelPopup(true);
-                        }}
-                      >
-                        <IoIosTrash size={18} />
-                      </button>
-                    </td>
-                  )}
+                        <IoMdOpen size={18} />
+                      </a>
+                    )}
+                    {userData.role == "admin" && (
+                      <>
+                        <button
+                          className="hover:text-green-600 transition"
+                          onClick={() => {
+                            setSelectedData(each);
+                            setShowEditPopup(true);
+                          }}
+                        >
+                          <IoMdCreate size={18} />
+                        </button>
+                        <button
+                          className="hover:text-red-600 transition"
+                          onClick={() => {
+                            setSelectedData(each);
+                            setShowDelPopup(true);
+                          }}
+                        >
+                          <IoIosTrash size={18} />
+                        </button>
+                      </>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>

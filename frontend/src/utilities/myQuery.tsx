@@ -10,6 +10,7 @@ type SignupDto = {
   username: string;
   name:string;
   password: string;
+  role:string;
 };
 
 type SigninDto = {
@@ -28,9 +29,11 @@ const SigninRespSchema = z.object({
 
 
 export function useSignUp(){
+  const queryClient = useQueryClient();
   const {mutate,isError,isPending} = useMutation({
     mutationFn:async(data:SignupDto)=>{
-      const resp = await api.post('api/signup',data)
+      const csrfToken = Cookies.get("csrf_access_token");
+      const resp = await api.post('api/signup',data,{withCredentials:true,headers: { "X-CSRF-TOKEN": csrfToken }})
       if(resp.status!=201){
         throw new Error("signup error")
       }
@@ -39,14 +42,17 @@ export function useSignUp(){
       toast.error("Can't signup try again later")
     },
     onSuccess:()=>{
-      toast.success("Signup success! Please Login")
+      toast.success("User added!")
+      queryClient.invalidateQueries({ queryKey: ["user"] });
     }
 
   })
   return {mutate,isError,isPending}
 }
 
+
 export function useSignIn(){
+  const queryClient = useQueryClient();
   const navigate = useNavigate()
   const {mutate,isError,isPending} = useMutation({
     mutationFn:async(data:SigninDto)=>{
@@ -67,6 +73,7 @@ export function useSignIn(){
     onSuccess:(fromMutation)=>{
       toast.success("Login Success")
       sessionStorage.setItem('user_id',fromMutation.user.user_id)
+      queryClient.invalidateQueries({ queryKey: ["userCheck"] });
       navigate("/")
     }
   })
@@ -557,17 +564,20 @@ const UserSchema = z.object({
   id:z.string(),
   nama:z.string(),
   role:z.string(),
-  username:z.string()
+  username:z.string(),
+  active:z.boolean()
 })
 const AllUserRespSchema = z.object({
-  data:z.array(UserSchema)
+  data:z.array(UserSchema),
+  page:z.number(),
+  total_pages:z.number()
 })
-
-export function useGetUser(){
+export type IUser = z.infer<typeof UserSchema>;
+export function useGetUser(page:number){
   const {data,isError,isLoading} = useQuery({
-    queryKey:['user'],
+    queryKey:['user',page],
     queryFn:async()=>{
-      const resp = await api.get('/api/user',{withCredentials:true})
+      const resp = await api.get(`/api/user?page=${page}`,{withCredentials:true})
       // console.log(resp.data)
       return resp.data
     }
@@ -577,10 +587,64 @@ export function useGetUser(){
   // console.log(parseResult)
 
   useEffect(()=>{
+    if(!isError){
+      return;
+    }
     if(isError||!parseResult.success){
       toast.error("Can't load data, please try again later 2")
     }
   },[isError,parseResult.success])
 
   return {data:parseResult.data,isError,isLoading}
+}
+
+
+export function useDelUser(){
+  const queryClient = useQueryClient();
+  const csrfToken = Cookies.get("csrf_access_token");
+  const {mutate,isPending} = useMutation({
+    mutationFn:async(id:string)=>{
+      const resp = await api.delete(`api/user/${id}`,{withCredentials:true,headers: { "X-CSRF-TOKEN": csrfToken }})
+      if(resp.status!=200){
+        throw new Error("Can't delete data, try again later")
+      }
+    },
+    onError:(e)=>{
+      toast.error(e.message)
+    },
+    onSuccess:()=>{
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+      toast.success("Data deleted")
+    }
+  })
+  return {mutate,isPending}
+}
+
+type IUpdateUser = {
+  id:string,
+  username: string;
+  name: string;
+  active: boolean;
+  role: string;
+}
+
+export function useUpdateUser(){
+  const csrfToken = Cookies.get("csrf_access_token");
+  const queryClient = useQueryClient();
+  const {mutate,isPending} = useMutation({
+    mutationFn:async(data:IUpdateUser)=>{
+      const resp = await api.put(`api/user/${data.id}`,data,{withCredentials:true,headers: { "X-CSRF-TOKEN": csrfToken }})
+      if(resp.status!=200){
+        throw new Error("Can't update data, try again later.")
+      }
+    },
+    onError:(e)=>{
+      toast.error(e.message)
+    },
+    onSuccess:()=>{
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+      toast.success("Data updated")
+    }
+  })
+  return {mutate,isPending}
 }

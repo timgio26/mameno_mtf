@@ -23,11 +23,48 @@ def notauth():
 @main_bp.get('/api/user')
 @jwt_required()
 def get_all_user():
-    users = AllUser.query.all()
+    page = int(request.args.get('page', 1))
+    per_page = int(request.args.get('per_page', 3))
+    offset = (page - 1) * per_page
+    # users = AllUser.query.all()
+    query = AllUser.query
+    users = query.offset(offset).limit(per_page).all()
+    total = query.count()
     return jsonify({
         "data": [r.to_dict() for r in users],
-        # "page": page,
-        # "total_pages": (total + per_page - 1) // per_page
+        "page": page,
+        "total_pages": (total + per_page - 1) // per_page
+    }), 200
+
+@main_bp.delete('/api/user/<id>')
+@jwt_required()
+def del_user(id):
+    user = AllUser.query.get_or_404(UUID(id))
+    db.session.delete(user)
+    db.session.commit()
+    return jsonify({
+        "message": "User deleted successfully",
+        "deleted_id": id
+    }), 200
+
+@main_bp.put('/api/user/<id>')
+@jwt_required()
+def update_user(id):
+    user = AllUser.query.get_or_404(UUID(id))
+    data = request.get_json()
+
+    user.nama = data.get('name', user.nama)
+    user.username = data.get('username', user.username)
+    user.role = data.get('role', user.role)
+    user.active = data.get('active', user.active)
+    # upmemo.no_memo = data.get('no', upmemo.no_memo)
+    # upmemo.tanggal_buat = data.get('tgl_update', upmemo.tanggal_buat)
+
+    db.session.commit()
+
+    return jsonify({
+        "message": "Memo updated successfully",
+        "updated": user.to_dict()
     }), 200
 
 ################### CREATE
@@ -59,6 +96,34 @@ def create_nota():
         "judul":newnota.judul_nota
     }), 201
 
+@main_bp.post('/api/nota_hist')
+# @jwt_required()
+def create_nota_hist():
+    data = request.get_json()
+    # now = date.today()
+    # no, no_nota = GenerateDocNumber(model=TblNota, prefix="Nota-CARM")
+
+    newnota = TblNota(
+        # penulis_nota=data.get("penulis"),
+        user_id=UUID(data.get("user_id")),
+        judul_nota=data.get("judul"),
+        tanggal_buat=data.get("tanggal_buat"),
+        # tahun_nota=now.year,
+        no=data.get("no"),
+        no_nota=data.get("no_nota"),
+        linknota = data.get('url')
+    )
+    db.session.add(newnota)
+    db.session.commit()
+
+    return jsonify({
+        "message": "Nota created successfully",
+        "id": newnota.id,
+        "no_doc": newnota.no_nota,
+        "pic":newnota.user.nama,
+        "judul":newnota.judul_nota
+    }), 201
+
 @main_bp.post('/api/memo')
 @jwt_required()
 def create_memo():
@@ -82,6 +147,34 @@ def create_memo():
         "message": "Memo created successfully",
         "id": newmemo.id,
         "no_doc": no_memo,
+        "pic":newmemo.user.nama,
+        "judul":newmemo.judul_memo
+    }), 201
+
+@main_bp.post('/api/memo_hist')
+# @jwt_required()
+def create_memo_hist():
+    data = request.get_json()
+    # now = date.today()
+    # no, no_memo = GenerateDocNumber(model=TblMemo, prefix="Memo-CARM")
+
+    newmemo = TblMemo(
+        # penulis_memo=data.get("penulis"),
+        user_id=UUID(data.get("user_id")),
+        judul_memo=data.get("judul"),
+        tanggal_buat=data.get("tanggal_buat"),
+        # tahun_memo=now.year,
+        no=data.get("no"),
+        no_memo=data.get("no_memo"),
+        linkmemo = data.get('url')        
+    )
+    db.session.add(newmemo)
+    db.session.commit()
+
+    return jsonify({
+        "message": "Memo created successfully",
+        "id": newmemo.id,
+        "no_doc": newmemo.no_memo,
         "pic":newmemo.user.nama,
         "judul":newmemo.judul_memo
     }), 201
@@ -113,12 +206,40 @@ def create_beli():
         "judul":newbeli.judul_beli
     }), 201
 
+@main_bp.post('/api/beli_hist')
+# @jwt_required()
+def create_beli_hist():
+    data = request.get_json()
+    # now = date.today()
+    # no, no_beli = GenerateDocNumber(model=TblBeli, prefix="FPPA-CARM")
+
+    newbeli = TblBeli(
+        # penulis_beli=data.get("penulis"),
+        user_id=UUID(data.get("user_id")),
+        judul_beli=data.get("judul"),
+        tanggal_buat=data.get("tanggal_buat"),
+        # tahun_beli=now.year,
+        no=data.get("no"),
+        no_beli=data.get("no_beli"),
+        linkbeli = data.get('url')
+    )
+    db.session.add(newbeli)
+    db.session.commit()
+
+    return jsonify({
+        "message": "Form Pembelian created successfully",
+        "id": newbeli.id,
+        "no_doc": newbeli.no_beli,
+        "pic":newbeli.user.nama,
+        "judul":newbeli.judul_beli
+    }), 201
+
 @main_bp.post('/api/bersama')
 @jwt_required()
 def create_bersama():
     data = request.get_json()
     now = date.today()
-    print(data.get("divisi"))
+    # print(data.get("divisi"))
     # divlist = ['div1', 'div2', 'div3', 'div4', 'div5']
     list_str = "-".join([str(div).upper() for div in data.get("divisi")])
     no, no_bersama = GenerateDocNumber(model=TblBersama, prefix=f"Nota Bersama-{list_str}")
@@ -143,6 +264,37 @@ def create_bersama():
         "judul":newdata.judul
     }), 201
 
+@main_bp.post('/api/bersama_hist')
+# @jwt_required()
+def create_bersama_hist():
+    data = request.get_json()
+    # now = date.today()
+    # print(data.get("divisi"))
+    # divlist = ['div1', 'div2', 'div3', 'div4', 'div5']
+    # list_str = "-".join([str(div).upper() for div in data.get("divisi")])
+    # no, no_bersama = GenerateDocNumber(model=TblBersama, prefix=f"Nota Bersama-{list_str}")
+
+    newdata = TblBersama(
+        # penulis=data.get("penulis"),
+        user_id=UUID(data.get("user_id")),
+        judul=data.get("judul"),
+        tanggal_buat=data.get("tanggal_buat"),
+        # tahun=now.year,
+        no=data.get("no"),
+        no_bersama=data.get("no_bersama"),
+        link = data.get("url")
+    )
+    db.session.add(newdata)
+    db.session.commit()
+
+    return jsonify({
+        "message": "Nota Bersama created successfully",
+        "id": newdata.id,
+        "no_doc": newdata.no_bersama,
+        "pic":newdata.user.nama,
+        "judul":newdata.judul
+    }), 201
+
 ################### READ
 
 @main_bp.get('/api/memo')
@@ -154,7 +306,7 @@ def get_memo_list():
 
     # Calculate offset
     offset = (page - 1) * per_page
-    query = TblMemo.query.order_by(desc(TblMemo.no))
+    query = TblMemo.query.order_by(desc(TblMemo.tanggal_buat))
 
     # Apply filtering only if search is provided
     if len(search)>0:
@@ -186,7 +338,7 @@ def get_beli_list():
 
     # Calculate offset
     offset = (page - 1) * per_page
-    query = TblBeli.query.order_by(desc(TblBeli.no))
+    query = TblBeli.query.order_by(desc(TblBeli.tanggal_buat))
 
     # Apply filtering only if search is provided
     if len(search)>0:
@@ -214,7 +366,7 @@ def get_bersama_list():
 
     # Calculate offset
     offset = (page - 1) * per_page
-    query = TblBersama.query.order_by(desc(TblBersama.no))
+    query = TblBersama.query.order_by(desc(TblBersama.tanggal_buat))
 
     # Apply filtering only if search is provided
     if len(search)>0:
@@ -242,7 +394,7 @@ def get_nota_list():
 
     # Calculate offset
     offset = (page - 1) * per_page
-    query = TblNota.query.order_by(desc(TblNota.no))
+    query = TblNota.query.order_by(desc(TblNota.tanggal_buat))
 
     # Apply filtering only if search is provided
     if len(search)>0:
@@ -269,7 +421,6 @@ def get_nota_list():
 @main_bp.delete('/api/nota/<id>')
 @jwt_required()
 def delete_nota(id):
-    print(id)
     nota = TblNota.query.get_or_404(UUID(id))
     db.session.delete(nota)
     db.session.commit()
@@ -423,13 +574,13 @@ def login():
     if not username or not password:
         return jsonify({"error": "Missing username or password"}), 400
 
-    entry = AllUser.query.filter_by(username=username).first_or_404()
+    entry = AllUser.query.filter_by(username=username,active=True).first_or_404()
 
     if not entry or not check_password_hash(entry.password, password):
         return jsonify({"error": "Invalid username or password"}), 401
 
     # Create JWT tokens
-    access_token = create_access_token(identity=entry.id,additional_claims={"role":entry.role})
+    access_token = create_access_token(identity=entry.id,additional_claims={"role":entry.role},expires_delta=False)
     refresh_token = create_refresh_token(identity=entry.id)
 
     # Build response
@@ -451,7 +602,7 @@ def login():
 
 
 @main_bp.post('/api/signup')
-@jwt_required()
+# @jwt_required()
 def signup():
     data = request.get_json()
     # Check if username already exists
@@ -463,12 +614,13 @@ def signup():
         username=data['username'],
         nama=data['name'],
         role=str(data['role']).lower(),
-        password=generate_password_hash(data['password'])  # Consider hashing this in production
+        password=generate_password_hash(data['password']),
+        active = True # Consider hashing this in production
     )
     db.session.add(userbaru)
     db.session.commit()
 
-    return jsonify({"message": "User registered successfully"}), 201
+    return jsonify({"message": "User registered successfully","user_id":userbaru.id}), 201
 
 @main_bp.post("/api/logout")
 def logout():

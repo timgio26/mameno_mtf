@@ -1,22 +1,16 @@
-import {  useState } from "react";
+import {  useEffect, useState } from "react";
 import { PopupModal } from "../components/PopUpModal";
 import { useDelMemo, useGetMemo, useUserCheck, type IMemo } from "../utilities/myQuery";
-import {
-  IoIosTrash,
-  // IoIosEye,
-  IoMdCreate,
-  IoIosCloseCircleOutline,
-} from "react-icons/io";
+import {IoIosTrash,IoMdOpen,IoMdCreate,IoIosCloseCircleOutline} from "react-icons/io";
 import { Loading } from "../components/Loading";
 import { Error } from "../components/Error";
 import { EditFormMemo } from "../components/EditFormMemo";
 import { Pagination } from "../components/Pagination";
-import { InputWithLimiter } from "../components/InputWithLimiter";
 
 export function Memo() {
   const [page,setPage] = useState<number>(1)
   const [search, setSearch] = useState<string>("");
-  // const [searchInput, setSearchInput] = useState<string>("");
+  const [input, setInput] = useState<string>("");
   const { data, isLoading, isError } = useGetMemo(page,search);
   const [showDelPopup, setShowDelPopup] = useState<boolean>(false);
   const [selectedData, setSelectedData] = useState<IMemo>();
@@ -24,7 +18,22 @@ export function Memo() {
   const [showEditPopup, setShowEditPopup] = useState<boolean>(false);
   const { data:userData } = useUserCheck();
 
+  useEffect(()=>{
+        if(!data)return;
+        if(page>data.total_pages){
+          setPage(data.total_pages)
+        }
+      },[data])
 
+  useEffect(() => {
+        const timer = setTimeout(() => {
+          if (input.length == 0 || input.length >= 3) {
+            setPage(1);
+            setSearch(input);
+          }
+        }, 500); // run this code after 500 ms
+        return () => clearTimeout(timer); // cancel previous timer
+      }, [input]);
 
   function handleDeleteMemo() {
     if (!selectedData) return;
@@ -35,6 +44,7 @@ export function Memo() {
       },
     });
   }
+
 
   if (isLoading) {
     return <Loading />;
@@ -53,13 +63,12 @@ export function Memo() {
         {/* Search Bar */}
 
         <div className="flex items-center gap-2 bg-gray-100 rounded-full px-4 py-2 border border-gray-300 focus-within:ring-2 focus-within:ring-blue-500 transition">
-
-          <InputWithLimiter
-            placeholder="Search Nota..."
-            functionAfterDelay={(val:string) => {
-              setPage(1);
-              setSearch(val);
-            }}
+                  <input
+            type="text"
+            placeholder="Search..."
+            className="bg-transparent outline-none text-sm text-gray-700 w-40 sm:w-64"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
           />
         </div>
       </div>
@@ -72,9 +81,7 @@ export function Memo() {
                 <th className="px-6 py-4 text-left">Judul</th>
                 <th className="px-6 py-4 text-left">PIC</th>
                 <th className="px-6 py-4 text-left">Tanggal</th>
-                {userData.role=='admin'&&
                 <th className="px-6 py-4 text-center">Actions</th>
-                }
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-sm text-slate-600">
@@ -86,31 +93,40 @@ export function Memo() {
                   <td className="px-6 py-4">{each.judul_memo}</td>
                   <td className="px-6 py-4">{each.penulis_memo}</td>
                   <td className="px-6 py-4">{each.tanggal_buat.split("00")[0].trim()}</td>
-                  {userData.role=='admin'&&
                   <td className="px-6 py-4 flex justify-center gap-3 text-slate-500">
-                    {/* <button className="hover:text-indigo-600 transition">
-                    <IoIosEye size={18} />
-                  </button> */}
-                    <button
-                      className="hover:text-green-600 transition"
-                      onClick={() => {
-                        setSelectedData(each);
-                        setShowEditPopup(true);
-                      }}
-                    >
-                      <IoMdCreate size={18} />
-                    </button>
-                    <button
-                      className="hover:text-red-600 transition"
-                      onClick={() => {
-                        setSelectedData(each);
-                        setShowDelPopup(true);
-                      }}
-                    >
-                      <IoIosTrash size={18} />
-                    </button>
+                    {each.link_memo && (
+                      <a
+                        className="hover:text-indigo-600 transition"
+                        href={each.link_memo}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <IoMdOpen size={18} />
+                      </a>
+                    )}
+                    {userData.role == "admin" && (
+                      <>
+                        <button
+                          className="hover:text-green-600 transition"
+                          onClick={() => {
+                            setSelectedData(each);
+                            setShowEditPopup(true);
+                          }}
+                        >
+                          <IoMdCreate size={18} />
+                        </button>
+                        <button
+                          className="hover:text-red-600 transition"
+                          onClick={() => {
+                            setSelectedData(each);
+                            setShowDelPopup(true);
+                          }}
+                        >
+                          <IoIosTrash size={18} />
+                        </button>
+                      </>
+                    )}
                   </td>
-                  }
                 </tr>
               ))}
             </tbody>
