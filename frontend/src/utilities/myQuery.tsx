@@ -57,6 +57,7 @@ export function useSignIn(){
   const {mutate,isError,isPending} = useMutation({
     mutationFn:async(data:SigninDto)=>{
       const resp = await api.post('api/login',data)
+      console.log(resp)
       if(resp.status!=200){
         throw new Error("Signin error")
       }
@@ -207,7 +208,7 @@ export function useGetNota(page:number,search:string){
     queryKey:["nota",page,search],
     queryFn:async()=>{
       const resp = await api.get(`api/nota?page=${page}&search=${search}`,{withCredentials:true})
-      console.log(page,search,resp)
+      // console.log(page,search,resp)
       return resp.data
     },
     retry:false

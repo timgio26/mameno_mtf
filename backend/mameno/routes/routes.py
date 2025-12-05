@@ -462,7 +462,7 @@ def login():
     entry = AllUser.query.filter_by(username=username,active=True).first_or_404()
 
     if not entry or not check_password_hash(entry.password, password):
-        return jsonify({"error": "Invalid username or password"}), 401
+        return jsonify({"error": "Invalid username or password"}),400
 
     # Create JWT tokens
     access_token = create_access_token(identity=entry.id,additional_claims={"role":entry.role},expires_delta=False)
