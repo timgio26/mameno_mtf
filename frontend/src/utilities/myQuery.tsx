@@ -207,7 +207,6 @@ export function useGetNota(page:number,search:string){
     queryKey:["nota",page,search],
     queryFn:async()=>{
       const resp = await api.get(`api/nota?page=${page}&search=${search}`,{withCredentials:true})
-      console.log(page,search,resp)
       return resp.data
     },
     retry:false
@@ -494,7 +493,6 @@ export function useGetBersama(page:number,search:string){
       toast.error("Can't load data, please try again later 2")
     }
   },[isError,parseResult.success])
-  // console.log(parseResult.data?.data)
   return {
     data: parseResult.data,
     isLoading,
@@ -579,13 +577,11 @@ export function useGetUser(page:number){
     queryKey:['user',page],
     queryFn:async()=>{
       const resp = await api.get(`/api/user?page=${page}`,{withCredentials:true})
-      // console.log(resp.data)
       return resp.data
     }
   })
 
   const parseResult = AllUserRespSchema.safeParse(data)
-  // console.log(parseResult)
 
   useEffect(()=>{
     if(!isError){
