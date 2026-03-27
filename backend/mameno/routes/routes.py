@@ -530,20 +530,20 @@ def download_data():
 
     with db.engine.connect() as conn:
         df_nota = pd.read_sql(text("""
-                                    with user_short as (SELECT id as user_id,nama from all_user)
-                                    SELECT no_nota, judul_nota, id as id_nota, tanggal_buat,linknota as link_nota, nama as PIC FROM tbl_nota left join user_short using(user_id);
+                                    SELECT no_nota, judul_nota, id as id_nota, tanggal_buat,linknota as link_nota, nama as PIC FROM tbl_nota left join 
+                                    (SELECT id as user_id,nama from all_user) as user_short using(user_id);
                                     """), conn)
         df_memo = pd.read_sql(text("""
-                                    with user_short as (SELECT id as user_id,nama from all_user)
-                                    select no_memo, judul_memo, id as id_memo, tanggal_buat,linkmemo as link_memo, nama as PIC from tbl_memo left join user_short using(user_id);
+                                    SELECT no_memo, judul_memo, id as id_memo, tanggal_buat,linkmemo as link_memo, nama as PIC from tbl_memo left join
+                                    (SELECT id as user_id,nama from all_user) as user_short using(user_id);
                                     """), conn)
         df_beli = pd.read_sql(text("""
-                                    with user_short as (SELECT id as user_id,nama from all_user)
-                                    select no_beli, judul_beli, id as id_beli, tanggal_buat,linkbeli as link_beli, nama as PIC from tbl_beli left join user_short using(user_id);
+                                    SELECT no_beli, judul_beli, id as id_beli, tanggal_buat,linkbeli as link_beli, nama as PIC from tbl_beli left join 
+                                   (SELECT id as user_id,nama from all_user) as user_short using(user_id);
                                     """), conn)
         df_bersama = pd.read_sql(text("""
-                                    with user_short as (SELECT id as user_id,nama from all_user)
-                                    select no_bersama, judul, id as id_bersama, tanggal_buat,link ,nama as PIC from tbl_bersama left join user_short using(user_id);
+                                    SELECT no_bersama, judul, id as id_bersama, tanggal_buat,link ,nama as PIC from tbl_bersama left join 
+                                    (SELECT id as user_id,nama from all_user) as user_short using(user_id);
                                     """), conn)
 
 
