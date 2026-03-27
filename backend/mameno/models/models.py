@@ -3,7 +3,7 @@ from sqlalchemy.orm import Mapped,mapped_column,relationship
 from sqlalchemy import Integer, String, Text, Date,Boolean
 from uuid import uuid4,UUID
 
-class AllUser(db.Model):
+class AllUser(db.Model): ##automaticaly become all_user table
     id: Mapped[UUID] = mapped_column(default=uuid4,primary_key=True)
     username: Mapped[str] = mapped_column(String(20), unique=True)
     nama: Mapped[str] = mapped_column(Text)
@@ -21,7 +21,7 @@ class AllUser(db.Model):
         }
 
 
-class TblNota(db.Model):
+class TblNota(db.Model): ##automaticaly become tbl_nota table
     id: Mapped[UUID] = mapped_column(default=uuid4,primary_key=True)
     # penulis_nota: Mapped[str] = mapped_column(Text)
     judul_nota: Mapped[str] = mapped_column(Text)
@@ -47,7 +47,7 @@ class TblNota(db.Model):
         }
 
 
-class TblMemo(db.Model):
+class TblMemo(db.Model): ##automaticaly become tbl_memo table
     id: Mapped[UUID] = mapped_column(default=uuid4,primary_key=True)
     # penulis_memo: Mapped[str] = mapped_column(Text)
     judul_memo: Mapped[str] = mapped_column(Text)
@@ -73,7 +73,7 @@ class TblMemo(db.Model):
         }
 
 
-class TblBeli(db.Model):
+class TblBeli(db.Model): ##automaticaly become tbl_beli table
     id: Mapped[UUID] = mapped_column(default=uuid4,primary_key=True)
     # penulis_beli: Mapped[str] = mapped_column(Text)
     judul_beli: Mapped[str] = mapped_column(Text)
@@ -99,7 +99,7 @@ class TblBeli(db.Model):
         }
 
 
-class TblBersama(db.Model):
+class TblBersama(db.Model): ##automaticaly become tbl_bersama table
     id: Mapped[UUID] = mapped_column(default=uuid4,primary_key=True)
     # penulis: Mapped[str] = mapped_column(Text)
     judul: Mapped[str] = mapped_column(Text)
