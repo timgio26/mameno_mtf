@@ -12,9 +12,6 @@ from io import BytesIO
 
 main_bp = Blueprint('main', __name__)
 
-@main_bp.route('/version')
-def version():
-    return "0.0.1",200
 
 @main_bp.get('/api/notauth')
 def notauth():
