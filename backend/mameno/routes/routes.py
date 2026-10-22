@@ -71,7 +71,7 @@ def update_user(id):
 def create_nota():
     data = request.get_json()
     now = date.today()
-    no, no_nota = GenerateDocNumber(model=TblNota, prefix="Nota-CARM")
+    no, no_nota = GenerateDocNumber(model=TblNota, prefix="Nota-ARM")
 
     newnota = TblNota(
         # penulis_nota=data.get("penulis"),
@@ -98,7 +98,7 @@ def create_nota():
 def create_memo():
     data = request.get_json()
     now = date.today()
-    no, no_memo = GenerateDocNumber(model=TblMemo, prefix="Memo-CARM")
+    no, no_memo = GenerateDocNumber(model=TblMemo, prefix="Memo-ARM")
 
     newmemo = TblMemo(
         # penulis_memo=data.get("penulis"),
@@ -125,7 +125,7 @@ def create_memo():
 def create_beli():
     data = request.get_json()
     now = date.today()
-    no, no_beli = GenerateDocNumber(model=TblBeli, prefix="FPPA-CARM")
+    no, no_beli = GenerateDocNumber(model=TblBeli, prefix="FPPA-ARM")
 
     newbeli = TblBeli(
         # penulis_beli=data.get("penulis"),
